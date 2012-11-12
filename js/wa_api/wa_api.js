@@ -144,6 +144,31 @@
 
             data.SendData(obj.callback, obj.exception, obj.ge_callback);
         },
+        AddTask: function(obj){
+            obj = $.extend(true, {
+                exception: {
+                    LimitExceeded: function(){}
+                }
+            }, obj);
+
+            var data = new wa_api.utils.json();
+            data.SetOpcode(wa_api.Constants.OperationCode.Add.Task);
+            data.SetToken(obj.token);
+
+            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.folderId);
+            data.AddData(wa_api.Constants.OperationItem.Mask, obj.mask);
+            data.AddData(wa_api.Constants.OperationItem.Name, obj.name);
+            data.AddData(wa_api.Constants.OperationItem.IgnoreGU, obj.ignoreGU);
+            data.AddData(wa_api.Constants.OperationItem.AllowProxy, obj.allowProxy);
+            data.AddData(wa_api.Constants.OperationItem.UniqPeriod, obj.uniquePeriod);
+            data.AddData(wa_api.Constants.OperationItem.RangeSize, obj.rangeSize);
+            data.AddData(wa_api.Constants.OperationItem.Domain, obj.domain);
+            data.AddData(wa_api.Constants.OperationItem.ExtSource, obj.extSource);
+            data.AddData(wa_api.Constants.OperationItem.BeforeClick, obj.beforeClick);
+            data.AddData(wa_api.Constants.OperationItem.AfterClick, obj.afterClick);
+
+            data.SendData(obj.callback, obj.exception, obj.ge_callback);
+        },
         ChangeAccountPassword: function(obj){
             obj = $.extend(true, {
 				token: null,
@@ -282,7 +307,8 @@
             var data = new wa_api.utils.json();
             data.SetOpcode(wa_api.Constants.OperationCode.Get.GeoTargeting);
             data.SetToken(obj.token);
-            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.idFolder);
+            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.folderId);
+            data.AddData(wa_api.Constants.OperationItem.IdTask, obj.taskId);
             
             data.SendData(obj.callback, obj.exception);
         },
@@ -300,6 +326,20 @@
 
 			data.SendData(obj.callback, obj.exception);
 		},
+        GetTimeTargeting: function(obj){
+            obj = $.extend(true, {
+                exception: {}
+            }, obj);
+
+            var data = new wa_api.utils.json();
+            data.SetOpcode(wa_api.Constants.OperationCode.Get.TimeTargeting);
+            data.SetToken(obj.token);
+
+            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.folderId);
+            data.AddData(wa_api.Constants.OperationItem.IdTask, obj.taskId);
+
+            data.SendData(obj.callback, obj.exception);
+        },
 		GetClickTargeting: function(obj){
 			obj = $.extend(true, {
 				exception: {}
@@ -327,6 +367,18 @@
 
 			data.SendData(obj.callback, obj.exception);
 		},
+        GetTasks: function(obj){
+            obj = $.extend(true, {
+                exception: {}
+            }, obj);
+
+            var data = new wa_api.utils.json();
+            data.SetOpcode(wa_api.Constants.OperationCode.Get.Tasks);
+            data.SetToken(obj.token);
+            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.folderId);
+
+            data.SendData(obj.callback, obj.exception);
+        },
 		SetVip: function(obj){
 			obj = $.extend(true, {
 				exception: {}
@@ -379,7 +431,8 @@
             var data = new wa_api.utils.json();
             data.SetOpcode(wa_api.Constants.OperationCode.Set.GeoTargeting);
             data.SetToken(obj.token);
-            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.idFolder);
+            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.folderId);
+            data.AddData(wa_api.Constants.OperationItem.IdTask, obj.taskId);
             var geo = [];
             $.each(obj.geoData, function(key, value){
 				if(value.value == 0) return;
@@ -450,6 +503,34 @@
 
 			data.SendData(obj.callback, obj.exception, obj.ge_callback);
 		},
+        SetTimeTargeting: function(obj){
+            obj = $.extend(true, {
+                exception: {}
+            }, obj);
+
+            var data = new wa_api.utils.json();
+            data.SetOpcode(wa_api.Constants.OperationCode.Set.TimeTargeting);
+            data.SetToken(obj.token);
+
+            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.folderId);
+            data.AddData(wa_api.Constants.OperationItem.IdTask, obj.taskId);
+
+            var time = [];
+            $.each(obj.timeData.min, function(key, value){
+                if(obj.timeData.max[key].value == 0) return;
+
+                var data = {};
+
+                data[wa_api.Constants.OperationItem.IdTime] = value.id;
+                data[wa_api.Constants.OperationItem.Min] = value.value;
+                data[wa_api.Constants.OperationItem.Max] = obj.timeData.max[key].value;
+
+                time.push(data);
+            });
+            data.AddData(wa_api.Constants.OperationItem.TimeTargeting, time);
+
+            data.SendData(obj.callback, obj.exception, obj.ge_callback);
+        },
 		SetDomain: function(obj){
 			obj = $.extend(true, {
 				exception: {}
@@ -466,6 +547,30 @@
 
 			data.SendData(obj.callback, obj.exception, obj.ge_callback);
 		},
+        SetTask: function(obj){
+            obj = $.extend(true, {
+                exception: {}
+            }, obj);
+
+            var data = new wa_api.utils.json();
+            data.SetOpcode(wa_api.Constants.OperationCode.Set.Task);
+            data.SetToken(obj.token);
+
+            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.folderId);
+            data.AddData(wa_api.Constants.OperationItem.IdTask, obj.taskId);
+            data.AddData(wa_api.Constants.OperationItem.Mask, obj.mask);
+            data.AddData(wa_api.Constants.OperationItem.Name, obj.name);
+            data.AddData(wa_api.Constants.OperationItem.IgnoreGU, obj.ignoreGU);
+            data.AddData(wa_api.Constants.OperationItem.AllowProxy, obj.allowProxy);
+            data.AddData(wa_api.Constants.OperationItem.UniqPeriod, obj.uniquePeriod);
+            data.AddData(wa_api.Constants.OperationItem.RangeSize, obj.rangeSize);
+            data.AddData(wa_api.Constants.OperationItem.Domain, obj.domain);
+            data.AddData(wa_api.Constants.OperationItem.ExtSource, obj.extSource);
+            data.AddData(wa_api.Constants.OperationItem.BeforeClick, obj.beforeClick);
+            data.AddData(wa_api.Constants.OperationItem.AfterClick, obj.afterClick);
+
+            data.SendData(obj.callback, obj.exception, obj.ge_callback);
+        },
 		DeleteFolders: function(obj){
 			obj = $.extend(true, {
 				exception: {}
@@ -505,6 +610,20 @@
             data.AddData(wa_api.Constants.OperationItem.IdsMasks, obj.masks);
 
             data.SendData(obj.callback, obj.exception);
+        },
+        DeleteTasks: function(obj){
+            obj = $.extend(true, {
+                exception: {}
+            }, obj);
+
+            var data = new wa_api.utils.json();
+            data.SetOpcode(wa_api.Constants.OperationCode.Delete.Tasks);
+            data.SetToken(obj.token);
+
+            data.AddData(wa_api.Constants.OperationItem.IdFolder, obj.folderId);
+            data.AddData(wa_api.Constants.OperationItem.IdsTasks, obj.tasks);
+
+            data.SendData(obj.callback, obj.exception);
         }
     };
 
@@ -513,11 +632,17 @@
         cwe : function(tag, attr, parent){
             var element = document.createElement(tag);
             if(attr){
-                if (attr.length > 0) {
-                    var array = attr.split(";");
-                    for (var x = 0; x<=array.length - 1; x++) {
-                        var tattr = array[x].split(",");
-                        element.setAttribute(tattr[0], tattr[1]);
+                if(attr instanceof Object){
+                    $.each(attr, function(name, value){
+                        element.setAttribute(name, value);
+                    });
+                }else{
+                    if (attr.length > 0) {
+                        var array = attr.split(";");
+                        for (var x = 0; x<=array.length - 1; x++) {
+                            var tattr = array[x].split(",");
+                            element.setAttribute(tattr[0], tattr[1]);
+                        };
                     };
                 };
             };
@@ -746,7 +871,15 @@
 				domain: {
 					domain: /^([\-a-zA-Zа-яА-Я0-9]+)?(?:[a-zA-Zа-яА-Я0-9][\-a-zA-Zа-яА-Я0-9]*[a-zA-Zа-яА-Я0-9]\.)+[a-zA-Zа-яА-Я]{2,6}$/,
 					extSource: "^(?:(?:ht|f)tps?://){1}([\-a-zA-Zа-яА-Я0-9]+)?(?:[a-zA-Zа-яА-Я0-9][\-a-zA-Zа-яА-Я0-9]*[a-zA-Zа-яА-Я0-9]\.)+[a-zA-Zа-яА-Я]{2,6}(?::\d{1,5})?(?:[?/\\#][?!^$.(){}:|=[\]+\-/\\*;&~#@,%\wА-Яа-я]*)?$"
-				}
+				},
+                task: {
+                    name: /^.*$/,
+                    domain: /^([\-a-zA-Zа-яА-Я0-9]+)?(?:[a-zA-Zа-яА-Я0-9][\-a-zA-Zа-яА-Я0-9]*[a-zA-Zа-яА-Я0-9]\.)+[a-zA-Zа-яА-Я]{2,6}$/,
+                    extSource: "^(?:(?:ht|f)tps?://){1}([\-a-zA-Zа-яА-Я0-9]+)?(?:[a-zA-Zа-яА-Я0-9][\-a-zA-Zа-яА-Я0-9]*[a-zA-Zа-яА-Я0-9]\.)+[a-zA-Zа-яА-Я]{2,6}(?::\d{1,5})?(?:[?/\\#][?!^$.(){}:|=[\]+\-/\\*;&~#@,%\wА-Яа-я]*)?$",
+                    rangeSize: /^\d+$/,
+                    mask: /^.*$/,
+                    uniquePeriod: /^\d+$/
+                }
 			},
             Login: function(login){
                 if(login.search(this.regexp.login) == -1 || login.length < wa_api.Constants.Limit.Account.Login.Length.Min || login.length > wa_api.Constants.Limit.Account.Login.Length.Max)
@@ -853,7 +986,9 @@
                 GeoTargeting: 'Get geo targeting',
 				ViewTargeting: 'Get views targeting',
 				ClickTargeting: 'Get clicks targeting',
-				Domains: 'Get domains'
+                TimeTargeting: 'Get time targeting',
+				Domains: 'Get domains',
+                Tasks: 'Get tasks'
             },
 
             Set : {
@@ -865,19 +1000,23 @@
                 GeoTargeting: 'Set geo targeting',
 				ViewTargeting: 'Set views targeting',
 				ClickTargeting: 'Set clicks targeting',
-				Domain: 'Set domain'
+                TimeTargeting: 'Set time targeting',
+				Domain: 'Set domain',
+                Task: 'Set task'
             },
 
             Add : {
                 Folder: 'Add folder',
 				Domain: 'Add domain',
-                Mask: 'Add mask'
+                Mask: 'Add mask',
+                Task: 'Add task'
             },
 
             Delete : {
                 Folders : 'Delete folders',
 				Domains: 'Delete domains',
-                Masks: 'Delete masks'
+                Masks: 'Delete masks',
+                Tasks: 'Delete tasks'
             },
 
             Edit : {
@@ -959,6 +1098,7 @@
             GeoTargeting: 'Geo targeting',
 			ViewTargeting: 'Views targeting',
 			ClickTargeting: 'Clicks targeting',
+            TimeTargeting: 'Time targeting',
             IdZone: 'Zone ID',
             Target: 'Target',
             ZoneShortName: 'Zone shortname',
@@ -968,10 +1108,15 @@
 			ExtSource: 'Ext source',
 			IdsDomain: 'Domain IDs',
             IdsMasks: 'Mask IDs',
+            IdsTasks: 'Task IDs',
 			IdTime: 'Time ID',
+            IdTask: 'Task ID',
 			Recd: 'Recd',
 			Min: 'Min',
-			Max: 'Max'
+			Max: 'Max',
+            BeforeClick: 'Before click',
+            AfterClick: 'After click',
+            Tasks: 'Tasks'
         },
 
         ResponseStatus : {
@@ -1118,7 +1263,62 @@
 						Max: 500
 					}
 				}
-			}
+			},
+
+            Task: {
+                Name: {
+                    Length: {
+                        Min: 1,
+                        Max: 50
+                    }
+                },
+                Domain: {
+                    Length: {
+                        Min: 5,
+                        Max: 255
+                    }
+                },
+                ExtSource: {
+                    Length: {
+                        Min: 5,
+                        Max: 500
+                    }
+                },
+                RangeSize: {
+                    Value: {
+                        Min: 10,
+                        Max: 24,
+                        Default: 16
+                    }
+                },
+                Mask: {
+                    Length: {
+                        Min: 0,
+                        Max: 50
+                    }
+                },
+                UniqPeriod: {
+                    Value: {
+                        Min: 0,
+                        Max: 28800,
+                        Default: 1440
+                    }
+                },
+                BeforeClick: {
+                    Value: {
+                        Min: 10,
+                        Max: 600,
+                        Default: 250
+                    }
+                },
+                AfterClick: {
+                    Value: {
+                        Min: 10,
+                        Max: 600,
+                        Default: 150
+                    }
+                }
+            }
         }
     };
 

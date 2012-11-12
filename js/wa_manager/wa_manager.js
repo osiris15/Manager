@@ -47,9 +47,12 @@
 					setGeotargeting: 'setGeotargeting',
 					setViewtargeting: 'setViewtargeting',
 					setClicktargeting: 'setClicktargeting',
+                    setTimetargeting: 'setTimetargeting',
 					domainAdd: 'domainAdd',
 					setDomain: 'setDomain',
-                    console: 'console'
+                    console: 'console',
+                    addTask: 'addTask',
+                    editTask: 'editTask'
 				},
 				'class': {
 					info: null,
@@ -62,7 +65,8 @@
 			account: {},
 			masks: {},
 			folders: {},
-			domains: {}
+			domains: {},
+            tasks: {}
 		},
 		control: {
 			textline: {
@@ -121,7 +125,8 @@
                         geo: 'geo',
 						view: 'view',
 						click: 'click',
-						data: 'data'
+						data: 'data',
+                        graphic: 'graphic'
 					}
 				}
 			},
@@ -130,11 +135,13 @@
 				type: {
 					geoTargeting: 'geoTargeting',
 					viewTargeting: 'viewTargeting',
-					clickTargeting: 'clickTargeting'
+					clickTargeting: 'clickTargeting',
+                    timeTargeting: 'timeTargeting'
 				}
 			},
 			maskList: {},
-			dataResult: {}
+			dataResult: {},
+            tabContainer: {}
 		},
 		attributes: {
 			tooltip: 'tooltip',
@@ -2040,7 +2047,7 @@
 					'class': null,
 					onClick: function(){},
 					order: 3,
-					show: true
+					show: false
 				},
 				referals: {
 					text: wa_manager.language.control.generalMenu.items.referals.text,
@@ -2433,7 +2440,14 @@
 						onClick: function(){},
 						order: 16,
 						show: false
-					}
+					},
+                    graphic: {
+                        type: constant.items.type.graphic,
+                        tooltip: language.items.graphic.tooltip,
+                        onClick: function(){},
+                        order: 17,
+                        show: false
+                    }
 				}
 			});
 
@@ -2671,6 +2685,7 @@
 				min: 0,
 				max: 100,
 				value: 0,
+                step: 1,
 				minLength: 0,
 				maxLength: 0,
 				focus: false,
@@ -2678,7 +2693,7 @@
 			});
 
 			proto.Constructor = function(){
-				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('div','',opts.holder);
+				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('div','class,inblock',opts.holder);
 
 				//set textline
 				var textline = proto.Data.textline = new wa_manager.control.textline({
@@ -2699,6 +2714,8 @@
 					tooltip: proto.Opts.tooltip
 				},{visible: true});
 				SelfObj.CheckText = proto.Data.textline.CheckText;
+                SelfObj.SetFocus = proto.Data.textline.SetFocus;
+                SelfObj.SetVisualError = proto.Data.textline.SetVisualError;
 				SelfObj.state = textline.state;
 
 				//create rangeBox
@@ -2712,11 +2729,11 @@
 					timeDelay = 1000,
 					periodChange = 75,
 					interval_up = new wa_manager.utils.interval(function(){
-						if(downing_up) SelfObj.PlusOne();
+						if(downing_up) SelfObj.Plus();
 						else interval_up.stop();
 					},periodChange),
 					interval_down = new wa_manager.utils.interval(function(){
-						if(downing_down) SelfObj.MinusOne();
+						if(downing_down) SelfObj.Minus();
 						else interval_down.stop();
 					},periodChange);
 				$(range_up).mousedown(function(){
@@ -2742,8 +2759,8 @@
 					if(interval_up) interval_up.stop();
 					if(interval_down) interval_down.stop();
 				});
-				$(range_up).click(SelfObj.PlusOne);
-				$(range_down).click(SelfObj.MinusOne);
+				$(range_up).click(SelfObj.Plus);
+				$(range_down).click(SelfObj.Minus);
 			};
 
 			//PROPERTYS
@@ -2751,17 +2768,17 @@
 			this.htmlElement = null;
 
 			//METHODS
-			this.PlusOne = function(){
+			this.Plus = function(){
 				var value = ((parseInt(proto.Data.textline.GetValue())) ? parseInt(proto.Data.textline.GetValue()) : opts.min),
-					new_value = ((value+1 > opts.max) ? opts.max : value+1);
+					new_value = ((value+opts.step > opts.max) ? opts.max : value+opts.step);
 
 				proto.Data.textline.SetValue(
 					(new_value < opts.min ? opts.min : new_value)
 				);
 			};
-			this.MinusOne = function(){
-				var value = ((parseInt(proto.Data.textline.GetValue())) ? parseInt(proto.Data.textline.GetValue()) : opts.min+1),
-					new_value = ((value-1 < opts.min) ? opts.min : value-1);
+			this.Minus = function(){
+				var value = ((parseInt(proto.Data.textline.GetValue())) ? parseInt(proto.Data.textline.GetValue()) : opts.min+opts.step),
+					new_value = ((value-opts.step < opts.min) ? opts.min : value-opts.step);
 
 				proto.Data.textline.SetValue(
 					(new_value > opts.max ? opts.max : new_value)
@@ -2778,6 +2795,8 @@
 				return proto.Data.textline.GetValue();
 			};
 			this.CheckText = null;
+            this.SetFocus = null;
+            this.SetVisualError = null;
 
 			this.Destroy = proto.Destroy;
 			this.Show = proto.Show;
@@ -3345,9 +3364,214 @@
 								};
 							}
 						]
-					}
+					},
+                    timeTargeting: {
+                        data: [
+                            {
+                                name: "give",
+                                data: opt.data.give.value,
+                                color : "rgba(11,151,2,0.7)",//цвет линии графика
+                                shadowSize : 1,//размер тени
+                                lines : {
+                                    show : true,//вкл/выкл линию графика
+                                    fill : true,//вкл/выкл заливку области графика
+                                    fillColor : 'rgba(0,0,0,0.07)',//цвет заливки области графика
+                                    lineWidth : 1.5//толщина линий
+                                },
+                                points: {
+                                    show : true,//вкл/выкл точки на линиях графиков
+                                    fill : true,//вкл/выкл заливку
+                                    fillColor : 'rgba(255,255,255,1)',//цвет заливки точки
+                                    lineWidth : 1,//толщина линии точки
+                                    radius : 3,//радиус точки
+                                    color: 'rgba(255,255,255,1)',//цвет точки
+                                    values: {
+                                        show: false,//вкл/выкл отображение значений в точках
+                                        font : "normal 11px arial",//шрифт текста значений
+                                        color: 'rgba(11,151,2,1)',//цвет текста значений
+                                        margin: 5//расстояние от точки до значения
+                                    }
+                                }
+                            },
+                            {
+                                name: "min",
+                                data: opt.data.min.value,
+                                color : "rgba(0,79,163,0.7)",//цвет линии графика
+                                shadowSize : 0,//размер тени
+                                lines : {
+                                    show : true,//вкл/выкл линию графика
+                                    fill : false,//вкл/выкл заливку области графика
+                                    fillColor : 'rgba(0,79,163,0.07)',//цвет заливки области графика
+                                    lineWidth : 1//толщина линий
+                                },
+                                points: {
+                                    show : true,//вкл/выкл точки на линиях графиков
+                                    fill : true,//вкл/выкл заливку
+                                    fillColor : 'rgba(255,255,255,1)',//цвет заливки точки
+                                    lineWidth : 1,//толщина линии точки
+                                    radius : 2,//радиус точки
+                                    color: 'rgba(255,255,255,1)',//цвет точки
+                                    values: {
+                                        show: false,//вкл/выкл отображение значений в точках
+                                        font : "normal 11px arial",//шрифт текста значений
+                                        color: 'rgba(71,1,2,1)',//цвет текста значений
+                                        margin: 5//расстояние от точки до значения
+                                    }
+                                }
+                            },
+                            {
+                                name: "max",
+                                data : opt.data.max.value,
+                                color : "rgba(240,73,35,0.7)",//цвет линии графика
+                                shadowSize : 0,//размер тени
+                                lines : {
+                                    show : true,//вкл/выкл линию графика
+                                    fill : false,//вкл/выкл заливку области графика
+                                    fillColor : 'rgba(240,73,35,.07)',//цвет заливки области графика
+                                    lineWidth : 1//толщина линий
+                                },
+                                points: {
+                                    show : true,//вкл/выкл точки на линиях графиков
+                                    fill : true,//вкл/выкл заливку
+                                    fillColor : 'rgba(255,255,255,1)',//цвет заливки точки
+                                    lineWidth : 1,//толщина линии точки
+                                    radius : 2,//радиус точки
+                                    color: 'rgba(255,255,255,1)',//цвет точки
+                                    values: {
+                                        show: false,//вкл/выкл отображение значений в точках
+                                        font : "normal 11px arial",//шрифт текста значений
+                                        color: 'rgba(0,102,153,1)',//цвет текста значений
+                                        margin: 5//расстояние от точки до значения
+                                    }
+                                }
+                            }
+                        ],
+                        options: {
+                            xaxis : {
+                                showValue : true, //показывать или нет значения
+                                min : 0,
+                                max : 23,
+                                tickSize : 1,//шаг
+                                tickFormatter: function (v) { return v; }
+                            },
+                            yaxis : {
+                                showValue : true, //показывать или нет значения
+                                min : 0,
+                                max : getMaxY(opt.data),
+                                tickSize : 10//шаг
+                            },
+                            grid : {
+                                hoverable : true,
+                                clickable : true,
+                                color : '#000',//цвет меток(числа 1 2 3 4 5 6 и т.д.)
+                                backgroundColor : {
+                                    colors : ["rgba(255,255,255,1)", "rgba(233,233,233,1)"]
+                                },//цвет заливки сетки
+                                tickColor : 'rgba(0,0,0,.1)',//цвет самой сетки
+                                labelMargin : 5,//растояние от метки до сетки
+                                borderWidth : 4,//ширина рамки по краю сетки
+                                mouseActiveRadius : 8//радиус активной точки
+                            }
+                        },
+                        events: [
+                            function(){
+                                $(proto.HtmlNodes.Main[0]).mousedown(function(e){
+                                    return false;
+                                });
+                            },
+                            //show tooltip
+                            function(){
+                                $(proto.HtmlNodes.Main[0]).bind("plothover", function(event, pos, item) {
+                                    if(item){
+                                        var x = item.datapoint[0].toFixed(0),
+                                            y = item.datapoint[1].toFixed(0);
+
+                                        SelfObj.tooltip.SetType(item.series.name);
+                                        SelfObj.tooltip.SetText(x + ":00 - " + ((x == 23) ? "0" : (parseInt(x)+1)) + ":00" + "<br />" + language.tooltip[item.series.name] + ": " + y);
+                                        SelfObj.tooltip.SetPosition(item.pageY - 15, item.pageX + 15);
+                                        SelfObj.tooltip.Show({effect: true});
+                                    }else{
+                                        SelfObj.tooltip.Hide();
+                                    };
+                                });
+                            },
+                            //redraw graph
+                            function(){
+                                var reDraw = false, graphMax = false, graphMin = false;
+                                $(proto.HtmlNodes.Main[0]).mousedown(function(e) {
+                                    reDraw = true;
+                                    if(e.shiftKey) graphMax = true;
+                                    else if(e.ctrlKey) graphMin = true;
+                                });
+                                $(window).mouseup(function(e) {
+                                    reDraw = false;
+                                    graphMax = false;
+                                    graphMin = false;
+                                });
+                                $(proto.HtmlNodes.Main[0]).bind("plothover", function(event, pos, item) {
+                                    if(reDraw){
+                                        var x = Math.round(pos.x),
+                                            y = Math.floor(pos.y),
+                                            data = SelfObj.graph.getData(),
+                                            xMax = data[0].xaxis.max,
+                                            yMax = data[0].yaxis.max,
+                                            idMin = getIdGraph(data, "min"),
+                                            idMax = getIdGraph(data, "max");
+
+                                        if(x < 0) x = 0;
+                                        else if(x > xMax) x = xMax;
+                                        if(y < 0) y = 0;
+                                        else if(y > yMax){
+                                            if(graphMax){
+                                                SelfObj.SetMaxYaxis(y+10);
+                                            };
+                                        }else if(y < yMax){
+                                            if(graphMax){
+                                                var maxY = getMaxY(data);
+                                                if(maxY > 50) SelfObj.SetMaxYaxis(maxY);
+                                                else SelfObj.SetMaxYaxis(50);
+                                            };
+                                        };
+
+                                        if(graphMax){
+                                            data[idMax].data[x] = [x, y];
+                                            if(data[idMin].data[x][1] > data[idMax].data[x][1])data[idMin].data[x][1] = data[idMax].data[x][1];
+                                        }else if(graphMin){
+                                            data[idMin].data[x] = [x, y];
+                                            if(data[idMax].data[x][1] < data[idMin].data[x][1])data[idMin].data[x][1] = data[idMax].data[x][1];
+                                        };
+
+                                        SelfObj.graph.setData(data);
+                                        SelfObj.graph.draw();
+                                        opts.onChange(SelfObj.GetData());
+                                    };
+                                });
+
+                                function getIdGraph(data, graphName){
+                                    for(var i=0;i<data.length;i++){
+                                        if(graphName == data[i].name) return i;
+                                    };
+
+                                    return false;
+                                };
+                                function getMaxY(data){
+                                    var arr = data[getIdGraph(data, "max")].data.slice();
+                                    arr.sort(function(a,b){return a[1]-b[1];});
+                                    return arr[arr.length-1][1];
+                                };
+                            }
+                        ]
+                    }
 				}
 			}, opt);
+
+            /*$.each(opt.data, function(key, value){
+                if(opt.data[key].value.length == 0){
+                    for(var i = opt.graphOption[opt.type].options.xaxis.min;i<=opt.graphOption[opt.type].options.xaxis.max;i++){
+                        opt.data[key].value.push([i,opt.graphOption[opt.type].options.yaxis.min]);
+                    };
+                };
+            });*/
 
 			proto.Constructor = function(){
 				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe("div","id,grapharea",opts.holder);
@@ -3774,7 +3998,143 @@
 			this.Toogle = proto.Toogle;
 
 			proto.Init(opt, param);
-		}
+		},
+        tabContainer: function(opt, param){
+            var proto = new wa_manager.proto(),
+                cwe = wa_api.utils.cwe,
+                opts = proto.Opts,
+                SelfObj = this,
+                constant = wa_manager.constants.control.tabContainer,
+                language = wa_manager.language.control.tabContainer,
+                attributes = wa_manager.constants.attributes;
+
+            //options
+            $.extend(true, opts, {
+                holder: document.body,
+                items: []
+            });
+
+            proto.Constructor = function(){
+                var parent = SelfObj.htmlElement = proto.HtmlNodes.Main[0] = cwe("div","class,tab-container",opts.holder);
+                    var menu = proto.Data.menu = cwe("div","class,tab-menu",parent);
+                    var content = proto.Data.content = cwe("div","class,tab-content",parent);
+
+                var items = [];
+                $.each(opts.items, function(key, value){
+                    if(value.show) items.push(value);
+                });
+                items.sort(function(a,b){
+                    return a.order- b.order;
+                });
+
+                $.each(items, function(key, value){
+                    SelfObj.AddTab(value);
+                });
+            };
+
+            function Item(opt, param){
+                var proto = new wa_manager.proto(),
+                    cwe = wa_api.utils.cwe,
+                    opts = proto.Opts,
+                    SelfObj = this,
+                    constant = wa_manager.constants.control.tabContainer,
+                    language = wa_manager.language.control.tabContainer,
+                    attributes = wa_manager.constants.attributes;
+
+                //options
+                $.extend(true, opts, {
+                    holder_menu: document.body,
+                    holder_content: document.body,
+                    name: "",
+                    text: "",
+                    order: 0,
+                    show: false,
+                    active: false,
+                    controls: [],
+                    "class": {
+                        active: "active"
+                    }
+                });
+
+                proto.Constructor = function(){
+                    var menu = proto.Data.menuItem = $(cwe("span","class,tablist",opts.holder_menu)).text(opts.text);
+                    var content = proto.Data.content = cwe("div","class,tab-box",opts.holder_content);
+
+                    $.each(opts.controls, function(key, value){
+                        SelfObj.controls[value.name] = new value.control(content);
+                    });
+
+                    $(menu).click(function(e){
+                        opts.activateTab(opts.name);
+                    });
+
+                    SelfObj.SetActive(opts.active);
+                };
+
+                //PROPERTYS
+                this.controls = {};
+                this.state = {
+                    active: false
+                };
+
+                //METHODS
+                this.SetActive = function(state){
+                    if(state){
+                        $(proto.Data.menuItem).addClass(opts["class"].active);
+                        $(proto.Data.content).show();
+                        SelfObj.state.active = true;
+                    }else{
+                        $(proto.Data.menuItem).removeClass(opts["class"].active);
+                        $(proto.Data.content).hide();
+                        SelfObj.state.active = false;
+                    };
+                };
+                this.GetControl = function(name){
+                    return SelfObj.controls[name];
+                };
+
+                this.Destroy = proto.Destroy;
+                this.Show = proto.Show;
+                this.Hide = proto.Hide;
+                this.Toogle = proto.Toogle;
+
+                proto.Init(opt, param);
+            };
+
+            //PROPERTYS
+            this.items = {};
+            this.state = {};
+            this.htmlElement = null;
+
+            //METHODS
+            this.AddTab = function(tab_cfg){
+                $.extend(true, tab_cfg, {
+                    holder_menu: proto.Data.menu,
+                    holder_content: proto.Data.content,
+                    activateTab: SelfObj.ActivateTab
+                });
+
+                SelfObj.items[tab_cfg.name] = new Item(tab_cfg, {visible: true});
+
+                if(tab_cfg.active) SelfObj.ActivateTab(tab_cfg.name);
+            };
+            this.ActivateTab = function(tab_name){
+                $.each(SelfObj.items, function(key, tab){
+                    if(key != tab_name) tab.SetActive(false);
+                    else tab.SetActive(true);
+                });
+            };
+            this.GetTab = function(tab_name){
+                return SelfObj.items[tab_name];
+            };
+
+            this.Destroy = proto.Destroy;
+            this.Show = proto.Show;
+            this.Hide = proto.Hide;
+            this.Toogle = proto.Toogle;
+
+            proto.Init(opt, param);
+        }
 	};
 
 	//FORMS
@@ -4160,11 +4520,21 @@
 				graphGeo: 'graphGeo',
 				graphView: 'grapthView',
 				graphClick: 'graphClick',
+                graphTime: 'graphTime',
 				domain: 'domain',
 				extSource: 'extSource',
 				listMask: 'listMask',
 				dataResult: 'dataResult',
-                console: 'console'
+                console: 'console',
+                tabContainer: 'tabContainer',
+                tab_1: 'tab_1',
+                tab_2: 'tab_2',
+                tab_3: 'tab_3',
+                tab_4: 'tab_4',
+                areaset: 'areaset',
+                nameTask: 'nameTask',
+                beforeClick: 'beforeClick',
+                afterClick: 'afterClick'
 			};
 			//options
 			var default_options = {
@@ -4906,7 +5276,8 @@
                                         });
                                         wa_api.methods.SetGeoTargeting({
                                             token: wa_manager.methods.GetToken(),
-                                            idFolder: opts.setGeotargeting.folderId,
+                                            folderId: opts.setGeotargeting.folderId,
+                                            taskId: opts.setGeotargeting.taskId,
                                             geoData: geoData,
                                             callback: function(){
                                                 SelfObj.Destroy();
@@ -5253,6 +5624,122 @@
 							}
 						]
 					},
+                    setTimetargeting: {
+                        buttons: {
+                            ok: {
+                                click: function(){
+                                    SelfObj.Hide({effect: true});
+
+                                    var  timeData = {min: [], max: []}, data = proto.Data.areaset.GetControl(inputs.graphTime).GetData();
+
+                                    $.each(data.min, function(key, value){
+                                        timeData.min.push({
+                                            id: value[0],
+                                            value: value[1]
+                                        });
+                                    });
+                                    $.each(data.max, function(key, value){
+                                        timeData.max.push({
+                                            id: value[0],
+                                            value: value[1]
+                                        });
+                                    });
+
+                                    wa_api.methods.SetTimeTargeting({
+                                        token: wa_manager.methods.GetToken(),
+                                        folderId: opts.setTimetargeting.folderId,
+                                        taskId: opts.setTimetargeting.taskId,
+                                        timeData: timeData,
+                                        callback: function(){
+                                            SelfObj.Destroy();
+                                        },
+                                        ge_callback: function(){
+                                            SelfObj.Show({effect: true});
+                                        }
+                                    });
+                                },
+                                text: button_lang.save,
+                                show: true
+                            },
+                            cancel: {
+                                click: function(){
+                                    SelfObj.Hide({
+                                        effect: true,
+                                        callback: function(){
+                                            if(opts.onClickButton[button_constant.button.name.ok]) opts.onClickButton[button_constant.button.name.cancel](SelfObj);
+                                            else SelfObj.Destroy();
+                                        }
+                                    });
+                                },
+                                text: button_lang.cancel,
+                                show: true
+                            }
+                        },
+                        controls: [
+                            {
+                                name: inputs.graphTime,
+                                text: language.type.setTimeTargeting.graphName,
+                                control: function(holder){
+                                    return new wa_manager.control.graphic({
+                                        holder: holder,
+                                        type: wa_manager.constants.control.graphic.type.timeTargeting,
+                                        data: opts[opts.type].data,
+                                        onChange: function(data){
+                                            var summ = {max: 0, min: 0, give: 0};
+                                            $.each(data.max,function(key,value){
+                                                summ.max += data.max[key][1];
+                                                summ.min += data.min[key][1];
+                                                summ.give += data.give[key][1];
+                                            });
+                                            proto.Data.areaset.GetControl(inputs.dataResult).SetValues(summ);
+                                        }
+                                    },{visible: true});
+                                }
+                            },
+                            {
+                                name: inputs.dataResult,
+                                control: function(holder){
+                                    return new wa_manager.control.dataResult({
+                                        holder: holder,
+                                        items: [
+                                            {
+                                                name: "max",
+                                                text: wa_manager.language.control.dataResult.max,
+                                                value: 0,
+                                                'class': 'max',
+                                                order: 1
+                                            },
+                                            {
+                                                name: "min",
+                                                text: wa_manager.language.control.dataResult.min,
+                                                value: 0,
+                                                'class': 'min',
+                                                order: 2
+                                            },
+                                            {
+                                                name: "give",
+                                                text: wa_manager.language.control.dataResult.give,
+                                                value: 0,
+                                                'class': 'give',
+                                                order: 3
+                                            }
+                                        ]
+                                    },{visible: true});
+                                }
+                            }
+                        ],
+                        events: [
+                            function(){
+                                var data = proto.Data.areaset.GetControl(inputs.graphTime).GetData(), summ = {max: 0, min: 0, give: 0};
+                                $.each(data.max,function(key,value){
+                                    summ.max += data.max[key][1];
+                                    summ.min += data.min[key][1];
+                                    summ.give += data.give[key][1];
+                                });
+                                proto.Data.areaset.GetControl(inputs.dataResult).SetValues(summ);
+                            }
+                        ]
+                    },
 					domainAdd: {
 						buttons: {
 							ok: {
@@ -5525,6 +6012,763 @@
                                 }
                             }
                         ]
+                    },
+                    addTask: {
+                        buttons: {
+                            ok: {
+                                click: function(){
+                                    SelfObj.ErrorHide();
+
+                                    var tabCont = proto.Data.areaset.GetControl(inputs.tabContainer),
+                                        tab_1 = tabCont.GetTab(inputs.tab_1),
+                                        tab_2 = tabCont.GetTab(inputs.tab_2),
+                                        areaset_1 = tab_1.GetControl(inputs.areaset),
+                                        areaset_2 = tab_2.GetControl(inputs.areaset);
+
+                                    //name task
+                                    areaset_1.GetControl(inputs.nameTask).CheckText();
+                                    if(areaset_1.GetControl(inputs.nameTask).state.error){
+                                        tabCont.ActivateTab(inputs.tab_1);
+                                        areaset_1.GetControl(inputs.nameTask).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.taskAdd.nameTask.error);
+                                        return;
+                                    };
+
+                                    //domain
+                                    areaset_1.GetControl(inputs.domain).CheckText();
+                                    if(areaset_1.GetControl(inputs.domain).state.error){
+                                        tabCont.ActivateTab(inputs.tab_1);
+                                        areaset_1.GetControl(inputs.domain).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.taskAdd.domain.error);
+                                        return;
+                                    };
+
+                                    //ext source
+                                    areaset_1.GetControl(inputs.extSource).CheckText();
+                                    if(areaset_1.GetControl(inputs.extSource).state.error){
+                                        tabCont.ActivateTab(inputs.tab_1);
+                                        areaset_1.GetControl(inputs.extSource).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.taskAdd.extSource.error);
+                                        return;
+                                    };
+
+                                    //mask
+                                    areaset_2.GetControl(inputs.mask[0]).CheckText();
+                                    if(areaset_2.GetControl(inputs.mask[0]).state.error){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.mask[0]).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.taskAdd.mask.error);
+                                        return;
+                                    };
+
+                                    //time before click
+                                    areaset_2.GetControl(inputs.beforeClick).CheckText();
+                                    if(areaset_2.GetControl(inputs.beforeClick).state.error || areaset_2.GetControl(inputs.beforeClick).GetValue()%10 != 0){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.beforeClick).SetFocus(true);
+                                        areaset_2.GetControl(inputs.beforeClick).SetVisualError(true);
+                                        SelfObj.ErrorShow(language.type.taskAdd.beforeClick.error);
+                                        return;
+                                    };
+
+                                    //time after click
+                                    areaset_2.GetControl(inputs.afterClick).CheckText();
+                                    if(areaset_2.GetControl(inputs.afterClick).state.error || areaset_2.GetControl(inputs.afterClick).GetValue()%10 != 0){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.afterClick).SetFocus(true);
+                                        areaset_2.GetControl(inputs.afterClick).SetVisualError(true);
+                                        SelfObj.ErrorShow(language.type.taskAdd.afterClick.error);
+                                        return;
+                                    };
+
+                                    //range size
+                                    areaset_2.GetControl(inputs.rangeSize).CheckText();
+                                    if(areaset_2.GetControl(inputs.rangeSize).state.error){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.rangeSize).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.taskAdd.rangeSize.error);
+                                        return;
+                                    };
+
+                                    //uniq time
+                                    areaset_2.GetControl(inputs.uniqTime).CheckText();
+                                    if(areaset_2.GetControl(inputs.uniqTime).state.error){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.uniqTime).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.taskAdd.uniqTime.error);
+                                        return;
+                                    };
+
+                                    SelfObj.Hide({
+                                        effect: true,
+                                        callback: function(){
+                                            wa_api.methods.AddTask({
+                                                token: wa_manager.methods.GetToken(),
+                                                folderId: opts.addTask.folderId,
+                                                mask: areaset_2.GetControl(inputs.mask[0]).GetValue(),
+                                                name: areaset_1.GetControl(inputs.nameTask).GetValue(),
+                                                ignoreGU: areaset_2.GetControl(inputs.ignoreGU).state.check,
+                                                allowProxy: areaset_2.GetControl(inputs.allowProxy).state.check,
+                                                uniquePeriod: areaset_2.GetControl(inputs.uniqTime).GetValue(),
+                                                rangeSize: areaset_2.GetControl(inputs.rangeSize).GetValue(),
+                                                domain: areaset_1.GetControl(inputs.domain).GetValue(),
+                                                extSource: areaset_1.GetControl(inputs.extSource).GetValue(),
+                                                beforeClick: areaset_2.GetControl(inputs.beforeClick).GetValue(),
+                                                afterClick: areaset_2.GetControl(inputs.afterClick).GetValue(),
+                                                exception: {
+                                                    LimitExceeded: function(){
+                                                        SelfObj.Destroy();
+
+                                                        var msgbox = new wa_manager.form.MessageBox({
+                                                            title: wa_manager.language.form.messagebox.title.error,
+                                                            text: language.type.taskAdd.exception.LimitExceeded.text,
+                                                            type: wa_manager.constants.form.messagebox.type.error
+                                                        },{});
+                                                        msgbox.Show({effect: true});
+                                                    }
+                                                },
+                                                callback: function(data){
+                                                    SelfObj.Destroy({
+                                                        callback: function(){
+                                                            $.extend(true, opts.addTask, {
+                                                                folderId: opts.addTask.folderId,
+                                                                mask: areaset_2.GetControl(inputs.mask[0]).GetValue(),
+                                                                name: areaset_1.GetControl(inputs.nameTask).GetValue(),
+                                                                ignoreGU: areaset_2.GetControl(inputs.ignoreGU).state.check,
+                                                                allowProxy: areaset_2.GetControl(inputs.allowProxy).state.check,
+                                                                uniquePeriod: areaset_2.GetControl(inputs.uniqTime).GetValue(),
+                                                                rangeSize: areaset_2.GetControl(inputs.rangeSize).GetValue(),
+                                                                domain: areaset_1.GetControl(inputs.domain).GetValue(),
+                                                                extSource: areaset_1.GetControl(inputs.extSource).GetValue(),
+                                                                beforeClick: areaset_2.GetControl(inputs.beforeClick).GetValue(),
+                                                                afterClick: areaset_2.GetControl(inputs.afterClick).GetValue(),
+                                                                taskId: data[jsonItem.IdTask]
+                                                            });
+
+                                                            opts.addTask.success(opts.addTask);
+                                                        }
+                                                    });
+                                                },
+                                                ge_callback: function(){
+                                                    SelfObj.Show({effect: true});
+                                                }
+                                            });
+                                        }
+                                    });
+                                },
+                                text: button_lang.save,
+                                show: true
+                            },
+                            cancel: {
+                                click: function(){
+                                    SelfObj.Hide({
+                                        effect: true,
+                                        callback: function(){
+                                            if(opts.onClickButton[button_constant.button.name.ok]) opts.onClickButton[button_constant.button.name.cancel](SelfObj);
+                                            else SelfObj.Destroy();
+                                        }
+                                    });
+                                },
+                                text: button_lang.cancel,
+                                show: true
+                            }
+                        },
+                        controls: [
+                            {
+                                name: inputs.tabContainer,
+                                control: function(holder){
+                                    var tabContainer = new wa_manager.control.tabContainer({
+                                        holder: holder,
+                                        items: [
+                                            {
+                                                name: inputs.tab_1,
+                                                text: language.type.taskAdd.tab_1,
+                                                active: true,
+                                                show: true,
+                                                controls: [
+                                                    {
+                                                        name: inputs.areaset,
+                                                        control: function(holder){
+                                                            var areaset = new wa_manager.control.areaset({
+                                                                holder: holder
+                                                            },{visible: true});
+
+                                                            //task name
+                                                            areaset.AddControl({
+                                                                name: inputs.nameTask,
+                                                                text: language.type.taskAdd.nameTask.text,
+                                                                control: function(holder){
+                                                                    return new wa_manager.control.textline({
+                                                                        holder: holder,
+                                                                        focus: true,
+                                                                        tooltip:  language.type.taskAdd.nameTask.tooltip,
+                                                                        minLength: limits.Task.Name.Length.Min,
+                                                                        maxLength:  limits.Task.Name.Length.Max,
+                                                                        regexp: regexp.task.name,
+                                                                        checkData: true
+                                                                    },{visible: true});
+                                                                }
+                                                            });
+
+                                                            //domain
+                                                            areaset.AddControl({
+                                                                name: inputs.domain,
+                                                                text: language.type.taskAdd.domain.text,
+                                                                control: function(holder){
+                                                                    return new wa_manager.control.textline({
+                                                                        holder: holder,
+                                                                        tooltip:  language.type.taskAdd.domain.tooltip,
+                                                                        minLength: limits.Task.Domain.Length.Min,
+                                                                        maxLength:  limits.Task.Domain.Length.Max,
+                                                                        regexp: regexp.task.domain,
+                                                                        checkData: true
+                                                                    },{visible: true});
+                                                                }
+                                                            });
+
+                                                            //domain
+                                                            areaset.AddControl({
+                                                                name: inputs.extSource,
+                                                                text: language.type.taskAdd.extSource.text,
+                                                                control: function(holder){
+                                                                    return new wa_manager.control.textline({
+                                                                        holder: holder,
+                                                                        tooltip:  language.type.taskAdd.extSource.tooltip,
+                                                                        minLength: limits.Task.ExtSource.Length.Min,
+                                                                        maxLength:  limits.Task.ExtSource.Length.Max,
+                                                                        regexp: regexp.task.extSource,
+                                                                        checkData: true
+                                                                    },{visible: true});
+                                                                }
+                                                            });
+
+                                                            return areaset;
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                name: inputs.tab_2,
+                                                text: language.type.taskAdd.tab_2,
+                                                show: true,
+                                                controls: [
+                                                    {
+                                                        name: inputs.areaset,
+                                                        control: function(holder){
+                                                            var areaset = new wa_manager.control.areaset({
+                                                                holder: holder
+                                                            },{visible: true});
+
+                                                            //mask
+                                                            areaset.AddControl({
+                                                                name: inputs.mask[0],
+                                                                text: language.type.taskAdd.mask.text,
+                                                                control: function(holder){
+                                                                    return new wa_manager.control.textline({
+                                                                        holder: holder,
+                                                                        tooltip:  language.type.taskAdd.mask.tooltip,
+                                                                        minLength: limits.Task.Mask.Length.Min,
+                                                                        maxLength:  limits.Task.Mask.Length.Max,
+                                                                        regexp: regexp.task.mask,
+                                                                        checkData: true
+                                                                    },{visible: true});
+                                                                }
+                                                            });
+
+                                                            //ignore GU
+                                                            areaset.AddControl({
+                                                                name: inputs.ignoreGU,
+                                                                text: "",
+                                                                control: function(holder){
+                                                                    var filter = cwe('div','class,filter',holder);
+
+                                                                    var cb = new wa_manager.control.checkbox({
+                                                                        holder: filter,
+                                                                        tooltip: language.type.taskAdd.ignoreGU.tooltip
+                                                                    },{visible: true});
+
+                                                                    $(cwe("span","",filter)).html(language.type.taskAdd.ignoreGU.text);
+
+                                                                    return cb;
+                                                                }
+                                                            });
+
+                                                            //allow proxy
+                                                            areaset.AddControl({
+                                                                name: inputs.allowProxy,
+                                                                text: "",
+                                                                control: function(holder){
+                                                                    var filter = cwe('div','class,filter',holder);
+
+                                                                    var cb = new wa_manager.control.checkbox({
+                                                                        holder: filter,
+                                                                        tooltip: language.type.taskAdd.allowProxy.tooltip
+                                                                    },{visible: true});
+
+                                                                    $(cwe("span","",filter)).html(language.type.taskAdd.allowProxy.text);
+
+                                                                    return cb;
+                                                                }
+                                                            });
+
+                                                            //time before & after click
+                                                            areaset.AddControl([
+                                                                {
+                                                                    name: inputs.beforeClick,
+                                                                    text: language.type.taskAdd.timeBeforeAfterClick,
+                                                                    control: function(holder){
+                                                                        return new control.numericUpDown({
+                                                                            holder: holder,
+                                                                            value: limits.Task.BeforeClick.Value.Default,
+                                                                            tooltip:  language.type.taskAdd.beforeClick.tooltip,
+                                                                            min: limits.Task.BeforeClick.Value.Min,
+                                                                            max: limits.Task.BeforeClick.Value.Max,
+                                                                            minLength: 1,
+                                                                            step: 10,
+                                                                            checkData: true
+                                                                        },{visible: true});
+                                                                    }
+                                                                },
+                                                                {
+                                                                    name: inputs.afterClick,
+                                                                    text: language.type.taskAdd.timeBeforeAfterClick,
+                                                                    control: function(holder){
+                                                                        return new control.numericUpDown({
+                                                                            holder: holder,
+                                                                            value: limits.Task.AfterClick.Value.Default,
+                                                                            tooltip:  language.type.taskAdd.afterClick.tooltip,
+                                                                            min: limits.Task.AfterClick.Value.Min,
+                                                                            max: limits.Task.AfterClick.Value.Max,
+                                                                            minLength: 1,
+                                                                            step: 10,
+                                                                            checkData: true
+                                                                        },{visible: true});
+                                                                    }
+                                                                }
+                                                            ]);
+
+                                                            //range size & uniq time
+                                                            areaset.AddControl([
+                                                                {
+                                                                    name: inputs.rangeSize,
+                                                                    text: language.type.taskAdd.rangeSizeUniqTime,
+                                                                    control: function(holder){
+                                                                        return new control.numericUpDown({
+                                                                            holder: holder,
+                                                                            value: limits.Task.RangeSize.Value.Default,
+                                                                            tooltip:  language.type.taskAdd.rangeSize.tooltip,
+                                                                            min: limits.Task.RangeSize.Value.Min,
+                                                                            max: limits.Task.RangeSize.Value.Max,
+                                                                            minLength: 1,
+                                                                            checkData: true
+                                                                        },{visible: true});
+                                                                    }
+                                                                },
+                                                                {
+                                                                    name: inputs.uniqTime,
+                                                                    text: language.type.taskAdd.rangeSizeUniqTime,
+                                                                    control: function(holder){
+                                                                        return new control.numericUpDown({
+                                                                            holder: holder,
+                                                                            value: limits.Task.UniqPeriod.Value.Default,
+                                                                            tooltip:  language.type.taskAdd.uniqTime.tooltip,
+                                                                            min: limits.Task.UniqPeriod.Value.Min,
+                                                                            max: limits.Task.UniqPeriod.Value.Max,
+                                                                            minLength: 1,
+                                                                            checkData: true
+                                                                        },{visible: true});
+                                                                    }
+                                                                }
+                                                            ]);
+
+                                                            return areaset;
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },{visible: true});
+
+                                    return tabContainer;
+                                }
+                            }
+                        ]
+                    },
+                    editTask: {
+                        buttons: {
+                            ok: {
+                                click: function(){
+                                    SelfObj.ErrorHide();
+
+                                    var tabCont = proto.Data.areaset.GetControl(inputs.tabContainer),
+                                        tab_1 = tabCont.GetTab(inputs.tab_1),
+                                        tab_2 = tabCont.GetTab(inputs.tab_2),
+                                        areaset_1 = tab_1.GetControl(inputs.areaset),
+                                        areaset_2 = tab_2.GetControl(inputs.areaset);
+
+                                    //name task
+                                    areaset_1.GetControl(inputs.nameTask).CheckText();
+                                    if(areaset_1.GetControl(inputs.nameTask).state.error){
+                                        tabCont.ActivateTab(inputs.tab_1);
+                                        areaset_1.GetControl(inputs.nameTask).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.editTask.nameTask.error);
+                                        return;
+                                    };
+
+                                    //domain
+                                    areaset_1.GetControl(inputs.domain).CheckText();
+                                    if(areaset_1.GetControl(inputs.domain).state.error){
+                                        tabCont.ActivateTab(inputs.tab_1);
+                                        areaset_1.GetControl(inputs.domain).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.editTask.domain.error);
+                                        return;
+                                    };
+
+                                    //ext source
+                                    areaset_1.GetControl(inputs.extSource).CheckText();
+                                    if(areaset_1.GetControl(inputs.extSource).state.error){
+                                        tabCont.ActivateTab(inputs.tab_1);
+                                        areaset_1.GetControl(inputs.extSource).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.editTask.extSource.error);
+                                        return;
+                                    };
+
+                                    //mask
+                                    areaset_2.GetControl(inputs.mask[0]).CheckText();
+                                    if(areaset_2.GetControl(inputs.mask[0]).state.error){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.mask[0]).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.editTask.mask.error);
+                                        return;
+                                    };
+
+                                    //time before click
+                                    areaset_2.GetControl(inputs.beforeClick).CheckText();
+                                    if(areaset_2.GetControl(inputs.beforeClick).state.error || areaset_2.GetControl(inputs.beforeClick).GetValue()%10 != 0){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.beforeClick).SetFocus(true);
+                                        areaset_2.GetControl(inputs.beforeClick).SetVisualError(true);
+                                        SelfObj.ErrorShow(language.type.editTask.beforeClick.error);
+                                        return;
+                                    };
+
+                                    //time after click
+                                    areaset_2.GetControl(inputs.afterClick).CheckText();
+                                    if(areaset_2.GetControl(inputs.afterClick).state.error || areaset_2.GetControl(inputs.afterClick).GetValue()%10 != 0){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.afterClick).SetFocus(true);
+                                        areaset_2.GetControl(inputs.afterClick).SetVisualError(true);
+                                        SelfObj.ErrorShow(language.type.editTask.afterClick.error);
+                                        return;
+                                    };
+
+                                    //range size
+                                    areaset_2.GetControl(inputs.rangeSize).CheckText();
+                                    if(areaset_2.GetControl(inputs.rangeSize).state.error){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.rangeSize).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.editTask.rangeSize.error);
+                                        return;
+                                    };
+
+                                    //uniq time
+                                    areaset_2.GetControl(inputs.uniqTime).CheckText();
+                                    if(areaset_2.GetControl(inputs.uniqTime).state.error){
+                                        tabCont.ActivateTab(inputs.tab_2);
+                                        areaset_2.GetControl(inputs.uniqTime).SetFocus(true);
+                                        SelfObj.ErrorShow(language.type.editTask.uniqTime.error);
+                                        return;
+                                    };
+
+                                    SelfObj.Hide({
+                                        effect: true,
+                                        callback: function(){
+                                            wa_api.methods.SetTask({
+                                                token: wa_manager.methods.GetToken(),
+                                                folderId: opts.editTask.folderId,
+                                                taskId: opts.editTask.taskId,
+                                                mask: areaset_2.GetControl(inputs.mask[0]).GetValue(),
+                                                name: areaset_1.GetControl(inputs.nameTask).GetValue(),
+                                                ignoreGU: areaset_2.GetControl(inputs.ignoreGU).state.check,
+                                                allowProxy: areaset_2.GetControl(inputs.allowProxy).state.check,
+                                                uniquePeriod: areaset_2.GetControl(inputs.uniqTime).GetValue(),
+                                                rangeSize: areaset_2.GetControl(inputs.rangeSize).GetValue(),
+                                                domain: areaset_1.GetControl(inputs.domain).GetValue(),
+                                                extSource: areaset_1.GetControl(inputs.extSource).GetValue(),
+                                                beforeClick: areaset_2.GetControl(inputs.beforeClick).GetValue(),
+                                                afterClick: areaset_2.GetControl(inputs.afterClick).GetValue(),
+                                                callback: function(data){
+                                                    SelfObj.Destroy({
+                                                        callback: function(){
+                                                            $.extend(true, opts.editTask, {
+                                                                folderId: opts.editTask.folderId,
+                                                                taskId: opts.editTask.taskId,
+                                                                mask: areaset_2.GetControl(inputs.mask[0]).GetValue(),
+                                                                name: areaset_1.GetControl(inputs.nameTask).GetValue(),
+                                                                ignoreGU: areaset_2.GetControl(inputs.ignoreGU).state.check,
+                                                                allowProxy: areaset_2.GetControl(inputs.allowProxy).state.check,
+                                                                uniquePeriod: areaset_2.GetControl(inputs.uniqTime).GetValue(),
+                                                                rangeSize: areaset_2.GetControl(inputs.rangeSize).GetValue(),
+                                                                domain: areaset_1.GetControl(inputs.domain).GetValue(),
+                                                                extSource: areaset_1.GetControl(inputs.extSource).GetValue(),
+                                                                beforeClick: areaset_2.GetControl(inputs.beforeClick).GetValue(),
+                                                                afterClick: areaset_2.GetControl(inputs.afterClick).GetValue()
+                                                            });
+
+                                                            opts.editTask.success(opts.editTask);
+                                                        }
+                                                    });
+                                                },
+                                                ge_callback: function(){
+                                                    SelfObj.Show({effect: true});
+                                                }
+                                            });
+                                        }
+                                    });
+                                },
+                                text: button_lang.save,
+                                show: true
+                            },
+                            cancel: {
+                                click: function(){
+                                    SelfObj.Hide({
+                                        effect: true,
+                                        callback: function(){
+                                            if(opts.onClickButton[button_constant.button.name.ok]) opts.onClickButton[button_constant.button.name.cancel](SelfObj);
+                                            else SelfObj.Destroy();
+                                        }
+                                    });
+                                },
+                                text: button_lang.cancel,
+                                show: true
+                            }
+                        },
+                        controls: [
+                            {
+                                name: inputs.tabContainer,
+                                control: function(holder){
+                                    var tabContainer = new wa_manager.control.tabContainer({
+                                        holder: holder,
+                                        items: [
+                                            {
+                                                name: inputs.tab_1,
+                                                text: language.type.editTask.tab_1,
+                                                active: true,
+                                                show: true,
+                                                controls: [
+                                                    {
+                                                        name: inputs.areaset,
+                                                        control: function(holder){
+                                                            var areaset = new wa_manager.control.areaset({
+                                                                holder: holder
+                                                            },{visible: true});
+
+                                                            //task name
+                                                            areaset.AddControl({
+                                                                name: inputs.nameTask,
+                                                                text: language.type.editTask.nameTask.text,
+                                                                control: function(holder){
+                                                                    return new wa_manager.control.textline({
+                                                                        holder: holder,
+                                                                        focus: true,
+                                                                        tooltip:  language.type.editTask.nameTask.tooltip,
+                                                                        minLength: limits.Task.Name.Length.Min,
+                                                                        maxLength:  limits.Task.Name.Length.Max,
+                                                                        regexp: regexp.task.name,
+                                                                        checkData: true,
+                                                                        value: opts.editTask.name
+                                                                    },{visible: true});
+                                                                }
+                                                            });
+
+                                                            //domain
+                                                            areaset.AddControl({
+                                                                name: inputs.domain,
+                                                                text: language.type.editTask.domain.text,
+                                                                control: function(holder){
+                                                                    return new wa_manager.control.textline({
+                                                                        holder: holder,
+                                                                        tooltip:  language.type.editTask.domain.tooltip,
+                                                                        minLength: limits.Task.Domain.Length.Min,
+                                                                        maxLength:  limits.Task.Domain.Length.Max,
+                                                                        regexp: regexp.task.domain,
+                                                                        checkData: true,
+                                                                        value: opts.editTask.domain
+                                                                    },{visible: true});
+                                                                }
+                                                            });
+
+                                                            //ext source
+                                                            areaset.AddControl({
+                                                                name: inputs.extSource,
+                                                                text: language.type.editTask.extSource.text,
+                                                                control: function(holder){
+                                                                    return new wa_manager.control.textline({
+                                                                        holder: holder,
+                                                                        tooltip:  language.type.editTask.extSource.tooltip,
+                                                                        minLength: limits.Task.ExtSource.Length.Min,
+                                                                        maxLength:  limits.Task.ExtSource.Length.Max,
+                                                                        regexp: regexp.task.extSource,
+                                                                        checkData: true,
+                                                                        value: opts.editTask.extSource
+                                                                    },{visible: true});
+                                                                }
+                                                            });
+
+                                                            return areaset;
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                name: inputs.tab_2,
+                                                text: language.type.editTask.tab_2,
+                                                show: true,
+                                                controls: [
+                                                    {
+                                                        name: inputs.areaset,
+                                                        control: function(holder){
+                                                            var areaset = new wa_manager.control.areaset({
+                                                                holder: holder
+                                                            },{visible: true});
+
+                                                            //mask
+                                                            areaset.AddControl({
+                                                                name: inputs.mask[0],
+                                                                text: language.type.editTask.mask.text,
+                                                                control: function(holder){
+                                                                    return new wa_manager.control.textline({
+                                                                        holder: holder,
+                                                                        tooltip:  language.type.editTask.mask.tooltip,
+                                                                        minLength: limits.Task.Mask.Length.Min,
+                                                                        maxLength:  limits.Task.Mask.Length.Max,
+                                                                        regexp: regexp.task.mask,
+                                                                        checkData: true,
+                                                                        value: opts.editTask.mask
+                                                                    },{visible: true});
+                                                                }
+                                                            });
+
+                                                            //ignore GU
+                                                            areaset.AddControl({
+                                                                name: inputs.ignoreGU,
+                                                                text: "",
+                                                                control: function(holder){
+                                                                    var filter = cwe('div','class,filter',holder);
+
+                                                                    var cb = new wa_manager.control.checkbox({
+                                                                        holder: filter,
+                                                                        tooltip: language.type.editTask.ignoreGU.tooltip,
+                                                                        state: (opts.editTask.ignoreGU) ? wa_manager.constants.control.checkbox.state.check : wa_manager.constants.control.checkbox.state.uncheck
+                                                                    },{visible: true});
+
+                                                                    $(cwe("span","",filter)).html(language.type.editTask.ignoreGU.text);
+
+                                                                    return cb;
+                                                                }
+                                                            });
+
+                                                            //allow proxy
+                                                            areaset.AddControl({
+                                                                name: inputs.allowProxy,
+                                                                text: "",
+                                                                control: function(holder){
+                                                                    var filter = cwe('div','class,filter',holder);
+
+                                                                    var cb = new wa_manager.control.checkbox({
+                                                                        holder: filter,
+                                                                        tooltip: language.type.editTask.allowProxy.tooltip,
+                                                                        state: (opts.editTask.allowProxy) ? wa_manager.constants.control.checkbox.state.check : wa_manager.constants.control.checkbox.state.uncheck
+                                                                    },{visible: true});
+
+                                                                    $(cwe("span","",filter)).html(language.type.editTask.allowProxy.text);
+
+                                                                    return cb;
+                                                                }
+                                                            });
+
+                                                            //time before & after click
+                                                            areaset.AddControl([
+                                                                {
+                                                                    name: inputs.beforeClick,
+                                                                    text: language.type.editTask.timeBeforeAfterClick,
+                                                                    control: function(holder){
+                                                                        return new control.numericUpDown({
+                                                                            holder: holder,
+                                                                            value: opts.editTask.beforeClick,
+                                                                            tooltip:  language.type.editTask.beforeClick.tooltip,
+                                                                            min: limits.Task.BeforeClick.Value.Min,
+                                                                            max: limits.Task.BeforeClick.Value.Max,
+                                                                            minLength: 1,
+                                                                            step: 10,
+                                                                            checkData: true
+                                                                        },{visible: true});
+                                                                    }
+                                                                },
+                                                                {
+                                                                    name: inputs.afterClick,
+                                                                    text: language.type.editTask.timeBeforeAfterClick,
+                                                                    control: function(holder){
+                                                                        return new control.numericUpDown({
+                                                                            holder: holder,
+                                                                            value: opts.editTask.afterClick,
+                                                                            tooltip:  language.type.editTask.afterClick.tooltip,
+                                                                            min: limits.Task.AfterClick.Value.Min,
+                                                                            max: limits.Task.AfterClick.Value.Max,
+                                                                            minLength: 1,
+                                                                            step: 10,
+                                                                            checkData: true
+                                                                        },{visible: true});
+                                                                    }
+                                                                }
+                                                            ]);
+
+                                                            //range size & uniq time
+                                                            areaset.AddControl([
+                                                                {
+                                                                    name: inputs.rangeSize,
+                                                                    text: language.type.editTask.rangeSizeUniqTime,
+                                                                    control: function(holder){
+                                                                        return new control.numericUpDown({
+                                                                            holder: holder,
+                                                                            value: opts.editTask.rangeSize,
+                                                                            tooltip:  language.type.editTask.rangeSize.tooltip,
+                                                                            min: limits.Task.RangeSize.Value.Min,
+                                                                            max: limits.Task.RangeSize.Value.Max,
+                                                                            minLength: 1,
+                                                                            checkData: true
+                                                                        },{visible: true});
+                                                                    }
+                                                                },
+                                                                {
+                                                                    name: inputs.uniqTime,
+                                                                    text: language.type.editTask.rangeSizeUniqTime,
+                                                                    control: function(holder){
+                                                                        return new control.numericUpDown({
+                                                                            holder: holder,
+                                                                            value: opts.editTask.uniquePeriod,
+                                                                            tooltip:  language.type.editTask.uniqTime.tooltip,
+                                                                            min: limits.Task.UniqPeriod.Value.Min,
+                                                                            max: limits.Task.UniqPeriod.Value.Max,
+                                                                            minLength: 1,
+                                                                            checkData: true
+                                                                        },{visible: true});
+                                                                    }
+                                                                }
+                                                            ]);
+
+                                                            return areaset;
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },{visible: true});
+
+                                    return tabContainer;
+                                }
+                            }
+                        ]
                     }
 				},
 				onClickButton: {},
@@ -5536,7 +6780,7 @@
 					maskName: null,
 					ignoreGU: null,
 					allowProxy: null,
-					uniqTime: limits.Mask.UniqPeriod.Value.Default,
+					uniquePeriod: limits.Mask.UniqPeriod.Value.Default,
 					rangeSize: limits.Mask.RangeSize.Value.Default,
 					maskDelimiter: '->',
 					success: function(param){}
@@ -5549,7 +6793,7 @@
                     maskName: null,
                     ignoreGU: null,
                     allowProxy: null,
-                    uniqTime: limits.Mask.UniqPeriod.Value.Default,
+                    uniquePeriod: limits.Mask.UniqPeriod.Value.Default,
                     rangeSize: limits.Mask.RangeSize.Value.Default,
                     maskDelimiter: '->',
                     success: function(param){}
@@ -5572,6 +6816,7 @@
 					title: language.type.setGeoTargeting.title,
 					text: language.type.setGeoTargeting.text,
 					folderId: null,
+                    taskId: 0,
                     data: {},
 					success: function(param){}
 				},
@@ -5583,6 +6828,14 @@
 					data: {},
 					success: function(param){}
 				},
+                setTimetargeting: {
+                    title: language.type.setTimeTargeting.title,
+                    text: language.type.setTimeTargeting.text,
+                    folderId: 0,
+                    taskId: 0,
+                    data: {},
+                    success: function(param){}
+                },
 				setClicktargeting: {
 					title: language.type.setClickTargeting.title,
 					text: language.type.setClickTargeting.text,
@@ -5611,6 +6864,40 @@
                 console: {
                     title: language.type.console.title,
                     text: language.type.console.text
+                },
+                addTask: {
+                    title: language.type.taskAdd.title,
+                    text: language.type.taskAdd.text,
+                    folderId: 0,
+                    taskId: 0,
+                    allowProxy: false,
+                    ignoreGU: false,
+                    rangeSize: wa_api.Constants.Limit.Mask.RangeSize.Value.Default,
+                    mask: "",
+                    uniquePeriod:  wa_api.Constants.Limit.Mask.UniqPeriod.Value.Default,
+                    name: "",
+                    domain: "",
+                    extSource: "",
+                    beforeClick: 0,
+                    afterClick: 0,
+                    success: function(data){}
+                },
+                editTask: {
+                    title: language.type.editTask.title,
+                    text: language.type.editTask.text,
+                    folderId: 0,
+                    taskId: 0,
+                    allowProxy: false,
+                    ignoreGU: false,
+                    rangeSize: wa_api.Constants.Limit.Mask.RangeSize.Value.Default,
+                    mask: "",
+                    uniquePeriod:  wa_api.Constants.Limit.Mask.UniqPeriod.Value.Default,
+                    name: "",
+                    domain: "",
+                    extSource: "",
+                    beforeClick: 0,
+                    afterClick: 0,
+                    success: function(data){}
                 }
 			};
 
@@ -7983,7 +9270,7 @@
 
 						wa_manager.data.form.main.SetActiveForm({
 							form: function(){
-								return new wa_manager.form.Domains({
+								return new wa_manager.form.Tasks({
 									holder: wa_manager.data.form.main.GetContentHolder(),
 									folderId: opts.idFolder
 								},{visible: false});
@@ -8026,7 +9313,7 @@
                                         }
                                     });
                                 },
-                                show: true,
+                                show: false,
                                 order: 2
                             },
 							rename: {
@@ -8599,7 +9886,515 @@
 			this.Toogle = proto.Toogle;
 
 			proto.Init(opt, param);
-		}
+		},
+        Tasks: function(opt, param){
+            var proto = new wa_manager.proto(),
+                cwe = wa_api.utils.cwe,
+                opts = proto.Opts,
+                SelfObj = this,
+                constant = wa_manager.constants.form.tasks,
+                control = wa_manager.control,
+                language = wa_manager.language.form.tasks,
+                jsonItem = wa_api.Constants.OperationItem;
+
+            //options
+            $.extend(true, opts, {
+                holder: document.body,
+                folderId: 0
+            });
+
+            proto.Constructor = function(){
+                var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('div','',opts.holder);
+
+                //add button panel
+                var buttonBox = proto.Data.BM = new control.buttonBox({
+                    holder: parent,
+                    buttons: {
+                        'delete': {
+                            text: language.buttons['delete'].text,
+                            click: function(){
+                                var items = [];
+                                $.each(SelfObj.items, function(key, value){
+                                    if(value.state.checked) items.push(value.GetValues().taskId);
+                                });
+
+                                var msgbox = new wa_manager.form.MessageBox({
+                                    title: wa_manager.language.form.messagebox.title.notification,
+                                    text: language.item.button['delete'].notification,
+                                    type: wa_manager.constants.form.messagebox.type.confirm,
+                                    onClickButton: {
+                                        ok: function(){
+                                            wa_api.methods.DeleteTasks({
+                                                token: wa_manager.methods.GetToken(),
+                                                folderId: opts.folderId,
+                                                tasks: items,
+                                                callback: function(data){
+                                                    $.each(items, function(key, value){
+                                                        SelfObj.deleteItem(value);
+                                                    });
+                                                    checkBoxAll.SetState(wa_manager.constants.control.checkbox.state.uncheck, true);
+                                                }
+                                            });
+                                        }
+                                    }
+                                },{});
+                                msgbox.Show({effect: true});
+                            },
+                            type: wa_manager.constants.control.buttonBox.button.type.leftGray,
+                            show: true,
+                            order: 1,
+                            'AnimateTime': 100
+                        },
+                        add: {
+                            text: language.buttons.add.text,
+                            click: function(){
+                                var msgbox = new wa_manager.form.MessageBox({
+                                    type: wa_manager.constants.form.messagebox.type.addTask,
+                                    addTask: {
+                                        folderId: opts.folderId,
+                                        success: function(param){
+                                            SelfObj.addItem({
+                                                folderId: param.folderId,
+                                                taskId: param.taskId,
+                                                allowProxy: param.allowProxy,
+                                                ignoreGU: param.ignoreGU,
+                                                rangeSize: param.rangeSize,
+                                                mask: param.mask,
+                                                uniquePeriod:  param.uniquePeriod,
+                                                name: param.name,
+                                                domain: param.domain,
+                                                extSource: param.extSource,
+                                                beforeClick: param.beforeClick,
+                                                afterClick: param.afterClick,
+                                                checkBoxClick: function(checkBox, state){
+                                                    var checkAll = true,
+                                                        checkSome = false;
+
+                                                    $.each(SelfObj.items, function(key, value){
+                                                        if(!value.state.checked) checkAll = false;
+                                                        else checkSome = true;
+                                                    });
+
+                                                    if(checkAll) checkBoxAll.SetState(wa_manager.constants.control.checkbox.state.check, true);
+                                                    else if(checkSome) checkBoxAll.SetState(wa_manager.constants.control.checkbox.state.tick, true);
+                                                    else checkBoxAll.SetState(wa_manager.constants.control.checkbox.state.uncheck, true);
+                                                },
+                                                actionDelete: function(id){
+                                                    SelfObj.deleteItem(id);
+                                                }
+                                            });
+                                        }
+                                    }
+                                },{visible: false});
+                                msgbox.Show({effect: true});
+                            },
+                            show: true,
+                            order: 1
+                        }
+                    }
+                },{visible: true});
+                //hide button delete
+                SelfObj.BMHide();
+
+                var infoTable = cwe('table','id,infotable',parent);
+
+                //set header
+                var head = cwe('tr','',cwe('thead','',infoTable));
+                //checbox
+                var checkBoxAll = new control.checkbox({
+                    holder: cwe('td','class,checked',head),
+                    onClick: function(checkBox, state){
+                        var checked = false,
+                            items = false;
+
+                        if(checkBox.state.check) checked = true;
+                        else if(checkBox.state.tick) checked = 'tick';
+                        else if(checkBox.state.uncheck) checked = false;
+
+                        $.each(SelfObj.items, function(key, value){
+                            items = true;
+                            if(checked != 'tick') if(value.state.checked != checked) value.SetChecked(checked);
+                        });
+
+                        if(!items || checkBox.state.uncheck) SelfObj.BMHide({effect: true});
+                        else SelfObj.BMShow({effect: true});
+                    }
+                },{visible: true});
+                //name of task
+                $(cwe('td','class,name',head)).html(language.infoHead.name);
+                //option
+                cwe('td','class,option',head);
+                //domen of task
+                $(cwe('td','class,name',head)).html(language.infoHead.domain);
+                //mask of task
+                $(cwe('td','class,value',head)).html(language.infoHead.mask);
+
+                proto.Data.itemsHolder = cwe('tbody','',infoTable);
+
+                wa_api.methods.GetTasks({
+                    token: wa_manager.methods.GetToken(),
+                    folderId: opts.folderId,
+                    callback: function(data){
+                        if(!data[jsonItem.Tasks]) return;
+
+                        $.each(data[jsonItem.Tasks], function(key, value){
+                            SelfObj.addItem({
+                                folderId: opts.folderId,
+                                taskId: value[jsonItem.IdTask],
+                                allowProxy: value[jsonItem.AllowProxy],
+                                ignoreGU: value[jsonItem.IgnoreGU],
+                                rangeSize: value[jsonItem.RangeSize],
+                                mask: value[jsonItem.Mask],
+                                uniquePeriod: value[jsonItem.UniqPeriod],
+                                name: value[jsonItem.Name],
+                                domain: value[jsonItem.Domain],
+                                extSource: value[jsonItem.ExtSource],
+                                beforeClick: value[jsonItem.BeforeClick],
+                                afterClick: value[jsonItem.AfterClick],
+                                checkBoxClick: function(checkBox, state){
+                                    var checkAll = true,
+                                        checkSome = false;
+
+                                    $.each(SelfObj.items, function(key, value){
+                                        if(!value.state.checked) checkAll = false;
+                                        else checkSome = true;
+                                    });
+
+                                    if(checkAll) checkBoxAll.SetState(wa_manager.constants.control.checkbox.state.check, true);
+                                    else if(checkSome) checkBoxAll.SetState(wa_manager.constants.control.checkbox.state.tick, true);
+                                    else checkBoxAll.SetState(wa_manager.constants.control.checkbox.state.uncheck, true);
+                                },
+                                actionDelete: function(id){
+                                    SelfObj.deleteItem(id);
+                                }
+                            });
+                        });
+                    }
+                });
+            };
+
+            function Item(opt, param){
+                var proto = new wa_manager.proto(),
+                    cwe = wa_api.utils.cwe,
+                    opts = proto.Opts,
+                    SelfObj = this,
+                    constant = wa_manager.constants.form.tasks,
+                    control = wa_manager.control,
+                    language = wa_manager.language.form.tasks,
+                    jsonItem = wa_api.Constants.OperationItem;
+
+                //options
+                proto.Opts = $.extend(true, proto.Opts, {
+                    holder: document.body,
+                    folderId: 0,
+                    taskId: 0,
+                    allowProxy: false,
+                    ignoreGU: false,
+                    rangeSize: wa_api.Constants.Limit.Mask.RangeSize.Value.Default,
+                    mask: "",
+                    uniquePeriod:  wa_api.Constants.Limit.Mask.UniqPeriod.Value.Default,
+                    name: "",
+                    domain: "",
+                    extSource: "",
+                    beforeClick: 0,
+                    afterClick: 0,
+                    onClick: function(idFolder){},
+                    checkBoxClick: function(checkBox, state){},
+                    'class': {
+                        check: 'check'
+                    },
+                    actionDelete: function(id){}
+                });
+
+                proto.Constructor = function(){
+                    var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('tr','',opts.holder);
+
+                    //checbox
+                    proto.Data.checkBox = new control.checkbox({
+                        holder: cwe('td','class,checked',parent),
+                        onClick: function(checkBox, state){
+                            if(checkBox.state.check){
+                                SelfObj.state.checked = true;
+                                $(parent).addClass(opts['class'].check);
+                            }
+                            else{
+                                SelfObj.state.checked = false;
+                                $(parent).removeClass(opts['class'].check);
+                            };
+
+                            opts.checkBoxClick(checkBox, state);
+                        }
+                    },{visible: true});
+                    $(parent).click(function(){
+                        proto.Data.checkBox.StateToogle();
+                    });
+                    //name
+                    proto.Data.name = cwe("span", "id,link", cwe('td','class,name',parent));
+                    $(proto.Data.name).click(function(e){
+                        e.stopPropagation();
+
+                        var msg = new wa_manager.form.MessageBox({
+                            type: wa_manager.constants.form.messagebox.type.editTask,
+                            editTask: {
+                                folderId: opts.folderId,
+                                taskId: opts.taskId,
+                                allowProxy: opts.allowProxy,
+                                ignoreGU: opts.ignoreGU,
+                                rangeSize: opts.rangeSize,
+                                mask: opts.mask,
+                                uniquePeriod:  opts.uniquePeriod,
+                                name: opts.name,
+                                domain: opts.domain,
+                                extSource: opts.extSource,
+                                beforeClick: opts.beforeClick,
+                                afterClick: opts.afterClick,
+                                success: function(param){
+                                    SelfObj.SetValues({
+                                        folderId: param.folderId,
+                                        taskId: param.taskId,
+                                        allowProxy: param.allowProxy,
+                                        ignoreGU: param.ignoreGU,
+                                        rangeSize: param.rangeSize,
+                                        mask: param.mask,
+                                        uniquePeriod:  param.uniquePeriod,
+                                        name: param.name,
+                                        domain: param.domain,
+                                        extSource: param.extSource,
+                                        beforeClick: param.beforeClick,
+                                        afterClick: param.afterClick
+                                    });
+                                }
+                            }
+                        },{visible: false});
+                        msg.Show({effect: true});
+                    });
+                    //option
+                    var iconBox = new control.iconBox({
+                        holder: cwe('td','class,option',parent),
+                        items: {
+                            rename: {
+                                onClick: function(){
+                                    return;
+                                    var msgbox = new wa_manager.form.MessageBox({
+                                        type: wa_manager.constants.form.messagebox.type.setDomain,
+                                        setDomain: {
+                                            folderId: proto.Opts.folderId,
+                                            domainId: proto.Opts.domainId,
+                                            domain: proto.Opts.domain,
+                                            extSource: proto.Opts.extSource,
+                                            success: function(param){
+                                                SelfObj.SetValues({
+                                                    domain: param.domain,
+                                                    extSource: param.extSource
+                                                });
+                                            }
+                                        }
+                                    },{visible: false});
+                                    msgbox.Show({effect: true});
+                                },
+                                show: false,
+                                tooltip: language.item.icon.rename.tooltip,
+                                order: 1
+                            },
+                            'delete': {
+                                onClick: function(){
+                                    var msgbox = new wa_manager.form.MessageBox({
+                                        title: wa_manager.language.form.messagebox.title.notification,
+                                        text: language.item.icon['delete'].notification,
+                                        type: wa_manager.constants.form.messagebox.type.confirm,
+                                        onClickButton: {
+                                            ok: function(){
+                                                wa_api.methods.DeleteTasks({
+                                                    token: wa_manager.methods.GetToken(),
+                                                    folderId: proto.Opts.folderId,
+                                                    tasks: [proto.Opts.taskId],
+                                                    callback: function(data){
+                                                        proto.Opts.actionDelete(proto.Opts.taskId);
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    },{});
+                                    msgbox.Show({effect: true});
+                                },
+                                show: true,
+                                order: 4
+                            },
+                            geo: {
+                                onClick: function(){
+                                    wa_api.methods.GetGeoTargeting({
+                                        token: wa_manager.methods.GetToken(),
+                                        folderId: opts.folderId,
+                                        taskId: opts.taskId,
+                                        callback: function(data){
+                                            data = data[jsonItem.GeoTargeting];
+                                            var graphData = {
+                                                min: {
+                                                    value: [],
+                                                    data: {}
+                                                }
+                                            };
+                                            $.each(data, function(key, value){
+                                                graphData.min.value.push([value[jsonItem.IdZone], value[jsonItem.Target]]);
+                                                graphData.min.data[value[jsonItem.IdZone]] = {
+                                                    xTick: value[jsonItem.ZoneShortName],
+                                                    tooltip: wa_manager.language.control.graphic.zoneName[value[jsonItem.ZoneShortName]]
+                                                };
+                                            });
+                                            graphData.min.value.sort(function(a,b){return a[0]-b[0]});
+                                            var msg = new wa_manager.form.MessageBox({
+                                                type: wa_manager.constants.form.messagebox.type.setGeotargeting,
+                                                setGeotargeting: {
+                                                    folderId: opts.folderId,
+                                                    taskId: opts.taskId,
+                                                    data: graphData
+                                                }
+                                            },{visible: false});
+                                            msg.Show({effect: true});
+                                        }
+                                    });
+                                },
+                                show: true,
+                                order: 3
+                            },
+                            graphic: {
+                                onClick: function(){
+                                    wa_api.methods.GetTimeTargeting({
+                                        token: wa_manager.methods.GetToken(),
+                                        folderId: opts.folderId,
+                                        taskId: opts.taskId,
+                                        callback: function(data){
+                                            data = data[jsonItem.TimeTargeting];
+                                            var graphData = {
+                                                min: {
+                                                    value: [],
+                                                    data: {}
+                                                },
+                                                max: {
+                                                    value: [],
+                                                    data: {}
+                                                },
+                                                give: {
+                                                    value: [],
+                                                    data: {}
+                                                }
+                                            };
+                                            $.each(data, function(key, value){
+                                                graphData.min.value.push([value[jsonItem.IdTime], value[jsonItem.Min]]);
+                                                graphData.max.value.push([value[jsonItem.IdTime], value[jsonItem.Max]]);
+                                                graphData.give.value.push([value[jsonItem.IdTime], value[jsonItem.Recd]]);
+                                            });
+                                            graphData.min.value.sort(function(a,b){return a[0]-b[0]});
+                                            graphData.max.value.sort(function(a,b){return a[0]-b[0]});
+                                            graphData.give.value.sort(function(a,b){return a[0]-b[0]});
+
+                                            var msg = new wa_manager.form.MessageBox({
+                                                type: wa_manager.constants.form.messagebox.type.setTimetargeting,
+                                                setTimetargeting: {
+                                                    folderId: opts.folderId,
+                                                    taskId: opts.taskId,
+                                                    data: graphData
+                                                }
+                                            },{visible: false});
+                                            msg.Show({effect: true});
+                                        }
+                                    });
+                                },
+                                show: true,
+                                order: 2
+                            }
+                        }
+                    },{visible: true});
+                    //domain
+                    proto.Data.domain = cwe('td','class,name',parent);
+                    //mask
+                    proto.Data.mask = cwe('td','class,value',parent);
+
+                    //set values
+                    SelfObj.SetValues(opts);
+                };
+
+                //PROPERTYS
+                this.state = {
+                    checked: false
+                };
+                this.htmlElement = null;
+
+                //METHODS
+                this.SetValues = function(obj){
+                    $.extend(true, opts, obj);
+
+                    //set display
+                    //name
+                    $(proto.Data.name).text(opts.name);
+                    //domain
+                    $(proto.Data.domain).text(opts.domain);
+                    //mask
+                    $(proto.Data.mask).text(opts.mask);
+                };
+                this.SetChecked = function(state){
+                    if(state) proto.Data.checkBox.SetState(wa_manager.constants.control.checkbox.state.check, true);
+                    else proto.Data.checkBox.SetState(wa_manager.constants.control.checkbox.state.uncheck, true);
+                };
+                this.GetValues = function(){
+                    return opts;
+                };
+
+                this.Destroy = proto.Destroy;
+                this.Show = proto.Show;
+                this.Hide = proto.Hide;
+                this.Toogle = proto.Toogle;
+
+                proto.Init(opt, param);
+            };
+
+            //PROPERTYS
+            this.state = {};
+            this.htmlElement = null;
+            this.items = {};
+            this.formInfo = {
+                name: language.name,
+                type: 'tasks',
+                generalMenu: true,
+                generalMenuItem: false,
+                displayImmediately: true,
+                breadcrumb: true,
+                breadcrumbLevel: 2
+            };
+
+            //METHODS
+            this.BMHide = function(param){
+                proto.Data.BM.buttons['delete'].Hide(param);
+            };
+            this.BMShow = function(param){
+                proto.Data.BM.buttons['delete'].Show(param);
+            };
+            this.addItem = function(item_cfg){
+                item_cfg.holder = proto.Data.itemsHolder;
+
+                var item =  new Item(item_cfg,{visible: true});
+
+                SelfObj.items[item_cfg.taskId] = item;
+
+                return item;
+            };
+            this.deleteItem = function(id){
+                if(SelfObj.items[id]) {
+                    SelfObj.items[id].Destroy({
+                        callback: function(){
+                            delete SelfObj.items[id];
+                        }
+                    });
+                };
+            };
+
+            this.Destroy = proto.Destroy;
+            this.Show = proto.Show;
+            this.Hide = proto.Hide;
+            this.Toogle = proto.Toogle;
+
+            proto.Init(opt, param);
+        }
 	};
 
 	//METHODS
@@ -8623,7 +10418,7 @@
 
 		//init wa_api
 		wa_api.init({
-			server: "http://www.waspace-run.net:81/",
+			server: "http://www.waspace-run.net:82/",
 			json: {
 				show: true,
 				input : function(json_str){
