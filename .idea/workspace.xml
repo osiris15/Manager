@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="8bb9bc7d-8521-44a8-bde2-06f170492d09" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/wa_api/wa_api.js" afterPath="$PROJECT_DIR$/js/wa_api/wa_api.js" />
     </list>
     <ignored path="manager.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,7 +25,7 @@
       <file leaf-file-name="checkbox&amp;text.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/checkbox&amp;text.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="7" selection-start="516" selection-end="516" vertical-scroll-proportion="0.50092083">
+            <state line="13" column="24" selection-start="464" selection-end="464" vertical-scroll-proportion="0.40699816">
               <folding />
             </state>
           </provider>
@@ -266,7 +265,11 @@
       <created>1352921023830</created>
       <updated>1352921023830</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Merge remote-tracking branch 'origin/0.0.0.1' into 0.0.0.1&#10;&#10;Conflicts:&#10;&#9;.idea/workspace.xml&#10;">
+      <created>1352921168088</created>
+      <updated>1352921168088</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -348,7 +351,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="disable comment tag for form auth" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge remote-tracking branch 'origin/0.0.0.1' into 0.0.0.1&#10;&#10;Conflicts:&#10;&#9;.idea/workspace.xml&#10;" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -363,6 +366,7 @@
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
     <MESSAGE value="on comment tag for form auth" />
     <MESSAGE value="disable comment tag for form auth" />
+    <MESSAGE value="Merge remote-tracking branch 'origin/0.0.0.1' into 0.0.0.1&#10;&#10;Conflicts:&#10;&#9;.idea/workspace.xml&#10;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -454,7 +458,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/checkbox&amp;text.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="7" selection-start="516" selection-end="516" vertical-scroll-proportion="0.50092083">
+        <state line="13" column="24" selection-start="464" selection-end="464" vertical-scroll-proportion="0.40699816">
           <folding />
         </state>
       </provider>
