@@ -1,9 +1,9 @@
 html {
 	color: #666;
-}
+}
 html, input, textarea, button {
 	font: 12px Helvetica, Arial, sans-serif;
-}
+}
 html, body, #container {
 	height: 100%;
 }
