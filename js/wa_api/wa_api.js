@@ -1313,7 +1313,7 @@
                 },
                 AfterClick: {
                     Value: {
-                        Min: 10,
+                        Min: 0,
                         Max: 600,
                         Default: 150
                     }
