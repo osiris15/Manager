@@ -1910,3 +1910,7 @@ div#resize:hover {
     color: #fff;
     cursor: default;
 }
+
+.github.style {
+    text-align: center;
+}
