@@ -1,15 +1,17 @@
 #f_menu {
-	zoom:expression(
+    zoom: expression(
 		runtimeStyle.zoom=1,
 		innerHTML+='<div id="clear">'
 	);
 }
+
 #f_menu li {
-	float: left;
+    float: left;
 }
+
 #footer .copy {
-	float:right;
-	height: 20px;
-	line-height: 20px;
-	text-align: right;
+    float: right;
+    height: 20px;
+    line-height: 20px;
+    text-align: right;
 }
