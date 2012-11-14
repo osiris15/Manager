@@ -1,6 +1,7 @@
 html {
     color: #666;
 }
+
 html, input, textarea, button {
     font: 12px Helvetica, Arial, sans-serif;
 }
@@ -418,13 +419,21 @@ embed, embed:active {
 #iconbox .item:active {
     opacity: .8;
 }
-
+.checkbox-container {
+    display: inline-block;
+}
+.checkbox-text {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 16px;
+}
 #checkbox {
     display: inline-block;
     margin: 0 5px;
     width: 16px;
     height: 16px;
     line-height: 16px;
+    vertical-align: middle;
 }
 
 #checkbox b {
