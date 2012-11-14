@@ -1,6 +1,4 @@
-
-<!-- saved from url=(0113)https://da2.hc.ru:2222/CMD_FILE_MANAGER/domains/manager.waspace.net/public_html/js/zeroclipboard/ZeroClipboard.as -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body>package {
+﻿package {
 	// Simple Set Clipboard System
 	// Author: Joseph Huckaby
 	
@@ -81,4 +79,3 @@
 		}
 	}
 }
-</body><style type="text/css"></style></html>
