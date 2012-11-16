@@ -429,6 +429,7 @@ embed, embed:active {
     display: inline-block;
     vertical-align: middle;
     line-height: 16px;
+    cursor: default;
 }
 
 .checkbox-text.left {
