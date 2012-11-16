@@ -419,15 +419,27 @@ embed, embed:active {
 #iconbox .item:active {
     opacity: .8;
 }
+
 .checkbox-container {
     display: inline-block;
+    clear: both;
 }
+
 .checkbox-text {
     display: inline-block;
     vertical-align: middle;
     line-height: 16px;
 }
-#checkbox {
+
+.checkbox-text.left {
+    float: left;
+}
+
+.checkbox-text.right {
+    float: right;
+}
+
+.checkbox {
     display: inline-block;
     margin: 0 5px;
     width: 16px;
@@ -436,7 +448,7 @@ embed, embed:active {
     vertical-align: middle;
 }
 
-#checkbox b {
+.checkbox b {
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -445,31 +457,31 @@ embed, embed:active {
     cursor: default;
 }
 
-#checkbox b.uncheck {
+.checkbox b.uncheck {
     background-position: -64px 0;
 }
 
-#checkbox b.uncheck:hover {
+.checkbox b.uncheck:hover {
     background-position: -64px -16px;
 }
 
-#checkbox b.uncheck:active, #checkbox b.check:active, #checkbox b.tick:active {
+.checkbox b.uncheck:active, .checkbox b.check:active, .checkbox b.tick:active {
     opacity: .75;
 }
 
-#checkbox b.check {
+.checkbox b.check {
     background-position: -80px 0;
 }
 
-#checkbox b.check:hover {
+.checkbox b.check:hover {
     background-position: -80px -16px;
 }
 
-#checkbox b.tick {
+.checkbox b.tick {
     background-position: -96px 0;
 }
 
-#checkbox b.tick:hover {
+.checkbox b.tick:hover {
     background-position: -96px -16px;
 }
 
