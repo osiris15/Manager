@@ -2840,6 +2840,32 @@
 					geoTargeting: {
 						data: [
 							{
+								name: "give",
+								data: opt.data.give.value,
+								color : "rgba(11,151,2,0.7)",//цвет линии графика
+								shadowSize : 1,//размер тени
+								lines : {
+									show : true,//вкл/выкл линию графика
+									fill : true,//вкл/выкл заливку области графика
+									fillColor : 'rgba(0,0,0,0.07)',//цвет заливки области графика
+									lineWidth : 1.5//толщина линий
+								},
+								points: {
+									show : true,//вкл/выкл точки на линиях графиков
+									fill : true,//вкл/выкл заливку
+									fillColor : 'rgba(255,255,255,1)',//цвет заливки точки
+									lineWidth : 1,//толщина линии точки
+									radius : 3,//радиус точки
+									color: 'rgba(255,255,255,1)',//цвет точки
+									values: {
+										show: false,//вкл/выкл отображение значений в точках
+										font : "normal 11px arial",//шрифт текста значений
+										color: 'rgba(11,151,2,1)',//цвет текста значений
+										margin: 5//расстояние от точки до значения
+									}
+								}
+							},
+							{
 								name: "min",
 								data: opt.data.min.value,
 								color : "rgba(0,79,163,0.7)",//цвет линии графика
@@ -2907,8 +2933,8 @@
 										var x = item.datapoint[0].toFixed(0),
 											y = item.datapoint[1].toFixed(0);
 
-										SelfObj.tooltip.SetType("min");
-										SelfObj.tooltip.SetText(opts.data.min.data[x].tooltip+": "+y+"%");
+										SelfObj.tooltip.SetType(item.series.name);
+										SelfObj.tooltip.SetText(((item.series.name == "min") ? language.tooltip.orderTraffic : language.tooltip.getTraffic) + ":<br />" + opts.data.min.data[x].tooltip+": "+y+"%");
 										SelfObj.tooltip.SetPosition(item.pageY - 15, item.pageX + 15);
 										SelfObj.tooltip.Show({effect: true});
 									}else{
@@ -2930,17 +2956,17 @@
 										var x = Math.round(pos.x),
 											y = Math.floor(pos.y),
 											data = SelfObj.graph.getData(),
-											xMax = data[0].xaxis.max,
-                                            xMin = data[0].xaxis.min,
-											yMax = data[0].yaxis.max,
-                                            yMin = data[0].yaxis.min;
+											xMax = data[1].xaxis.max,
+                                            xMin = data[1].xaxis.min,
+											yMax = data[1].yaxis.max,
+                                            yMin = data[1].yaxis.min;
 
 										if(x < xMin) x = xMin;
 										else if(x > xMax) x = xMax;
 										if(y < yMin) y = yMin;
 										else if(y > yMax) y = yMax;
 
-										data[0].data[x-1] = [x, y];
+										data[1].data[x-1] = [x, y];
                                         /*
 										//получаем сумму значений
 										var summ = 0, over = 0;
@@ -3564,14 +3590,6 @@
                     }
 				}
 			}, opt);
-
-            /*$.each(opt.data, function(key, value){
-                if(opt.data[key].value.length == 0){
-                    for(var i = opt.graphOption[opt.type].options.xaxis.min;i<=opt.graphOption[opt.type].options.xaxis.max;i++){
-                        opt.data[key].value.push([i,opt.graphOption[opt.type].options.yaxis.min]);
-                    };
-                };
-            });*/
 
 			proto.Constructor = function(){
 				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe("div","id,grapharea",opts.holder);
@@ -8394,7 +8412,7 @@
 								value: (data[jsonItem.Icq]) ? dataFormat.Icq(data[jsonItem.Icq]) : language.notAvailable
 							},
 							balance: {
-								value: (data[jsonItem.Balance]) ? dataFormat.Balance(data[jsonItem.Balance]) : language.notAvailable
+								value: (data[jsonItem.Balance] || data[jsonItem.Balance] == 0) ? dataFormat.Balance(data[jsonItem.Balance]) : language.notAvailable
 							},
 							inactivity: {
 								value: ((data[jsonItem.InActivity] == 0) ? dataFormat.Int(data[jsonItem.InActivity]) : "<span id='item_status' class='warning'>"+dataFormat.Int(data[jsonItem.InActivity])+"</span>"),
@@ -9060,11 +9078,6 @@
 
 			proto.Constructor = function(){
 				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('div','',opts.holder);
-
-				var notification = new wa_manager.control.texterror({
-					holder: parent,
-					text: wa_manager.language.notification.testPage
-				},{visible: true});
 
 				//add button panel
 				var buttonBox = proto.Data.BM = new control.buttonBox({
@@ -10229,6 +10242,10 @@
                                         callback: function(data){
                                             data = data[jsonItem.GeoTargeting];
                                             var graphData = {
+												give: {
+													value: [],
+													data: {}
+												},
                                                 min: {
                                                     value: [],
                                                     data: {}
@@ -10240,8 +10257,15 @@
                                                     xTick: value[jsonItem.ZoneShortName],
                                                     tooltip: wa_manager.language.control.graphic.zoneName[value[jsonItem.ZoneShortName]]
                                                 };
+
+												graphData.give.value.push([value[jsonItem.IdZone], value[jsonItem.Recd]]);
+												graphData.give.data[value[jsonItem.IdZone]] = {
+													xTick: value[jsonItem.ZoneShortName],
+													tooltip: wa_manager.language.control.graphic.zoneName[value[jsonItem.ZoneShortName]]
+												};
                                             });
                                             graphData.min.value.sort(function(a,b){return a[0]-b[0]});
+											graphData.give.value.sort(function(a,b){return a[0]-b[0]});
                                             var msg = new wa_manager.form.MessageBox({
                                                 type: wa_manager.constants.form.messagebox.type.setGeotargeting,
                                                 setGeotargeting: {
@@ -10418,7 +10442,7 @@
 
 		//init wa_api
 		wa_api.init({
-			server: "http://www.waspace-run.net:82/",
+			server: "http://node0.waspace-run.net:80/",
 			json: {
 				show: true,
 				input : function(json_str){

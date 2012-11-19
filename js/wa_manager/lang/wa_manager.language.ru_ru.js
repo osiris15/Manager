@@ -809,7 +809,9 @@ wa_manager.language = {
 			tooltip: {
 				max: "Максимум",
 				min: "Минимум",
-				give: "Получено"
+				give: "Получено",
+				orderTraffic: "Заказано трафика",
+				getTraffic: "Получено трафика"
 			}
 		},
 		maskList: {
