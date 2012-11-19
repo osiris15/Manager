@@ -30,9 +30,9 @@
 			expiriesday: 30
 		},
 		language: {
-			ru: 'ru_RU',
-			en: 'en_EN',
-			ua: 'ua_UA'
+			ru: 'ru_ru',
+			en: 'en_en',
+			ua: 'ua_ua'
 		},
 		form: {
 			messagebox: {
