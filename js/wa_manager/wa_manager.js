@@ -2830,6 +2830,10 @@
 					give: {
 						value: [],//[[x, y]]
 						data: {}//{2: {tooltip: "", xTick: "", yTick: ""}}
+					},
+					incomplete: {
+						value: [],//[[x, y]]
+						data: {}//{2: {tooltip: "", xTick: "", yTick: ""}}
 					}
 				},
 				onChange: function(data){}
@@ -3470,7 +3474,33 @@
                                         margin: 5//расстояние от точки до значения
                                     }
                                 }
-                            }
+                            },
+							{
+								name: "incomplete",
+								data : opt.data.incomplete.value,
+								color : "rgba(51,0,0,0.3)",//цвет линии графика
+								shadowSize : 1,//размер тени
+								lines : {
+									show : true,//вкл/выкл линию графика
+									fill : true,//вкл/выкл заливку области графика
+									fillColor : 'rgba(0,0,0,0)',//цвет заливки области графика
+									lineWidth : 1//толщина линий
+								},
+								points: {
+									show : true,//вкл/выкл точки на линиях графиков
+									fill : true,//вкл/выкл заливку
+									fillColor : 'rgba(51,0,0,0.5)',//цвет заливки точки
+									lineWidth : .5,//толщина линии точки
+									radius : 2,//радиус точки
+									color: 'rgba(1,1,1,1)',//цвет точки
+									values: {
+										show: false,//вкл/выкл отображение значений в точках
+										font : "normal 8px arial",//шрифт текста значений
+										color: '#000',//цвет текста значений
+										margin: 5//расстояние от точки до значения
+									}
+								}
+							}
                         ],
                         options: {
                             xaxis : {
@@ -10301,16 +10331,22 @@
                                                 give: {
                                                     value: [],
                                                     data: {}
-                                                }
+                                                },
+												incomplete: {
+													value: [],
+													data: {}
+												}
                                             };
                                             $.each(data, function(key, value){
                                                 graphData.min.value.push([value[jsonItem.IdTime], value[jsonItem.Min]]);
                                                 graphData.max.value.push([value[jsonItem.IdTime], value[jsonItem.Max]]);
                                                 graphData.give.value.push([value[jsonItem.IdTime], value[jsonItem.Recd]]);
+												graphData.incomplete.value.push([value[jsonItem.IdTime], value[jsonItem.Incomplete]]);
                                             });
                                             graphData.min.value.sort(function(a,b){return a[0]-b[0]});
                                             graphData.max.value.sort(function(a,b){return a[0]-b[0]});
                                             graphData.give.value.sort(function(a,b){return a[0]-b[0]});
+											graphData.incomplete.value.sort(function(a,b){return a[0]-b[0]});
 
                                             var msg = new wa_manager.form.MessageBox({
                                                 type: wa_manager.constants.form.messagebox.type.setTimetargeting,
