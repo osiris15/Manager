@@ -3513,7 +3513,7 @@
                             yaxis : {
                                 showValue : true, //показывать или нет значения
                                 min : 0,
-                                max : getMaxY(opt.data),
+                                max : (getMaxY(opt.data) <= 50) ? getMaxY(opt.data) : getMaxY(opt.data) + 10,
                                 tickSize : 10//шаг
                             },
                             grid : {
@@ -3579,12 +3579,12 @@
                                         if(y < 0) y = 0;
                                         else if(y > yMax){
                                             if(graphMax){
-                                                SelfObj.SetMaxYaxis(y+10);
+                                                SelfObj.SetMaxYaxis(y + data[0].yaxis.tickSize);
                                             };
                                         }else if(y < yMax){
                                             if(graphMax){
                                                 var maxY = getMaxY(data);
-                                                if(maxY > 50) SelfObj.SetMaxYaxis(maxY);
+                                                if(maxY > 50) SelfObj.SetMaxYaxis(maxY + data[0].yaxis.tickSize);
                                                 else SelfObj.SetMaxYaxis(50);
                                             };
                                         };
@@ -3751,6 +3751,7 @@
 				opts.graphOption[opts.type].data[0].data = curData.give;
 				opts.graphOption[opts.type].data[1].data = curData.min;
 				opts.graphOption[opts.type].data[2].data = curData.max;
+				opts.graphOption[opts.type].data[3].data = curData.incomplete;
 				opts.graphOption[opts.type].options.yaxis.max = yMax;
 				SelfObj.graph.shutdown();
 				SelfObj.InitGraph();
