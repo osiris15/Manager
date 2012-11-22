@@ -811,7 +811,8 @@ wa_manager.language = {
 				min: "Минимум",
 				give: "Получено",
 				orderTraffic: "Заказано трафика",
-				getTraffic: "Получено трафика"
+				getTraffic: "Получено трафика",
+				incomplete: "Невыполнено"
 			}
 		},
 		maskList: {

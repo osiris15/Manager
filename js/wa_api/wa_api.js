@@ -874,8 +874,8 @@
 				},
                 task: {
                     name: /^.*$/,
-                    domain: /^([\-a-zA-Zа-яА-Я0-9]+)?(?:[a-zA-Zа-яА-Я0-9][\-a-zA-Zа-яА-Я0-9]*[a-zA-Zа-яА-Я0-9]\.)+[a-zA-Zа-яА-Я]{2,6}$/,
-                    extSource: "^(?:(?:ht|f)tps?://){1}([\-a-zA-Zа-яА-Я0-9]+)?(?:[a-zA-Zа-яА-Я0-9][\-a-zA-Zа-яА-Я0-9]*[a-zA-Zа-яА-Я0-9]\.)+[a-zA-Zа-яА-Я]{2,6}(?::\d{1,5})?(?:[?/\\#][?!^$.(){}:|=[\]+\-/\\*;&~#@,%\wА-Яа-я]*)?$",
+                    domain: /^((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|(([a-zA-Zа-яА-Я0-9\-]*\.)+[a-zA-Zа-яА-Я]{2,6}))$/,
+                    extSource: /^(http|https|ftp)(:\/\/)((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|(([a-zA-Zа-яА-Я0-9\-]*\.)+[a-zA-Zа-яА-Я]{2,6}))(\/{1}.{1,})?$/,
                     rangeSize: /^\d+$/,
                     mask: /^.*$/,
                     uniquePeriod: /^\d+$/
@@ -1116,7 +1116,8 @@
 			Max: 'Max',
             BeforeClick: 'Before click',
             AfterClick: 'After click',
-            Tasks: 'Tasks'
+            Tasks: 'Tasks',
+			Incomplete: 'Incomplete'
         },
 
         ResponseStatus : {
