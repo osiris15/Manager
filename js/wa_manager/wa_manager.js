@@ -10320,14 +10320,14 @@
                                             $.each(data, function(key, value){
                                                 graphData.min.value.push([value[jsonItem.IdZone], value[jsonItem.Target]]);
                                                 graphData.min.data[value[jsonItem.IdZone]] = {
-                                                    xTick: value[jsonItem.ZoneShortName],
-                                                    tooltip: wa_manager.language.control.graphic.zoneName[value[jsonItem.ZoneShortName]]
+                                                    xTick: value[jsonItem.Name],
+                                                    tooltip: wa_manager.language.control.graphic.zoneName[value[jsonItem.Name]]
                                                 };
 
 												graphData.give.value.push([value[jsonItem.IdZone], value[jsonItem.Recd]]);
 												graphData.give.data[value[jsonItem.IdZone]] = {
-													xTick: value[jsonItem.ZoneShortName],
-													tooltip: wa_manager.language.control.graphic.zoneName[value[jsonItem.ZoneShortName]]
+													xTick: value[jsonItem.Name],
+													tooltip: wa_manager.language.control.graphic.zoneName[value[jsonItem.Name]]
 												};
                                             });
                                             graphData.min.value.sort(function(a,b){return a[0]-b[0]});
