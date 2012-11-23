@@ -5319,7 +5319,7 @@
                                         var geoData = [];
                                         $.each(data.min, function(key, value){
                                             geoData.push({
-                                                id: value[0],
+                                                id: opts[opts.type]._data.reference.min[value[0]],
                                                 value: value[1]
                                             });
                                         });
@@ -5359,10 +5359,44 @@
 								name: inputs.graphGeo,
 								text: language.type.setGeoTargeting.graphName,
 								control: function(holder){
+									//reform data for graphic
+									opts[opts.type]._data.reference = {};
+									opts[opts.type]._data.graphData = {};
+
+									$.each(opts[opts.type].data, function(graphName, graphData){
+										if(!opts[opts.type]._data.reference[graphName]){
+											opts[opts.type]._data.reference[graphName] = {};
+										};
+
+										if(!opts[opts.type]._data.graphData[graphName]){
+											opts[opts.type]._data.graphData[graphName] = {};
+											opts[opts.type]._data.graphData[graphName].value = [];
+											opts[opts.type]._data.graphData[graphName].data = {};
+										};
+
+										var index = 1;
+										$.each(graphData.value, function(key, arr_val){
+											opts[opts.type]._data.graphData[graphName].value.push([index, arr_val[1]]);
+											opts[opts.type]._data.reference[graphName][index] = arr_val[0];
+
+											index++;
+										});
+
+										index = 1;
+										$.each(graphData.data, function(key, data){
+											opts[opts.type]._data.graphData[graphName].data[index] = data;
+
+											index++;
+										});
+									});
+									//console.log(opts[opts.type].data);
+									//console.log(opts[opts.type]._data);
+
+									//set graph control
 									return new wa_manager.control.graphic({
 										holder: holder,
 										type: wa_manager.constants.control.graphic.type.geoTargeting,
-										data: opts[opts.type].data
+										data: opts[opts.type]._data.graphData
 									},{visible: true});
 								}
 							}
@@ -6867,6 +6901,7 @@
 					folderId: null,
                     taskId: 0,
                     data: {},
+					_data: {},
 					success: function(param){}
 				},
 				setViewtargeting: {
@@ -10297,6 +10332,7 @@
                                             });
                                             graphData.min.value.sort(function(a,b){return a[0]-b[0]});
 											graphData.give.value.sort(function(a,b){return a[0]-b[0]});
+
                                             var msg = new wa_manager.form.MessageBox({
                                                 type: wa_manager.constants.form.messagebox.type.setGeotargeting,
                                                 setGeotargeting: {
