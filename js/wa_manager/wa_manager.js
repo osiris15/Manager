@@ -5384,7 +5384,8 @@
 
 										index = 1;
 										$.each(graphData.data, function(key, data){
-											opts[opts.type]._data.graphData[graphName].data[index] = data;
+											//opts[opts.type]._data.graphData[graphName].data[index] = data;
+											opts[opts.type]._data.graphData[graphName].data[index] = graphData.data[opts[opts.type]._data.reference[graphName][index]];
 
 											index++;
 										});
@@ -10307,6 +10308,9 @@
                                         taskId: opts.taskId,
                                         callback: function(data){
                                             data = data[jsonItem.GeoTargeting];
+											data.sort(function(a,b){
+												return a[jsonItem.IdZone]-b[jsonItem.IdZone];
+											});
                                             var graphData = {
 												give: {
 													value: [],
