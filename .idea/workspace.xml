@@ -26,7 +26,7 @@
       <file leaf-file-name="main.css" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/css/main.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="2097" column="18" selection-start="33667" selection-end="33667" vertical-scroll-proportion="0.41480207">
+            <state line="2107" column="33" selection-start="33810" selection-end="33810" vertical-scroll-proportion="0.73666096">
               <folding />
             </state>
           </provider>
@@ -388,7 +388,11 @@
       <created>1353951562656</created>
       <updated>1353951562656</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="w-geo">
+      <created>1353951584066</created>
+      <updated>1353951584066</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -642,7 +646,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/css/main.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2097" column="18" selection-start="33667" selection-end="33667" vertical-scroll-proportion="0.41480207">
+        <state line="2107" column="33" selection-start="33810" selection-end="33810" vertical-scroll-proportion="0.73666096">
           <folding />
         </state>
       </provider>

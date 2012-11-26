@@ -2105,6 +2105,10 @@ h3.name-selected {
     overflow-y: auto;
 }
 
+.country-selected tbody tr:hover .link-popup {
+    border-bottom: 1px dashed;
+}
+
 .link-popup:hover {
     color: #006699;
     border-bottom: 1px dashed;
