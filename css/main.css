@@ -270,7 +270,7 @@ embed, embed:active {
     text-align: right;
 }
 
-#iconbox .item {
+.iconbox .item {
     display: inline-block;
     margin: 0 3px;
     width: 16px;
@@ -281,155 +281,155 @@ embed, embed:active {
     opacity: .7;
 }
 
-#iconbox .item.purse {
+.iconbox .item.purse {
     background-position: -112px 0;
 }
 
-#iconbox .item.purse:hover {
+.iconbox .item.purse:hover {
     background-position: -112px -16px;
 }
 
-#iconbox .item.edit {
+.iconbox .item.edit {
     background-position: -128px 0;
 }
 
-#iconbox .item.edit:hover {
+.iconbox .item.edit:hover {
     background-position: -128px -16px;
 }
 
-#iconbox .item.restore {
+.iconbox .item.restore {
     background-position: -144px 0;
 }
 
-#iconbox .item.restore:hover {
+.iconbox .item.restore:hover {
     background-position: -144px -16px;
 }
 
-#iconbox .item.copy {
+.iconbox .item.copy {
     background-position: -160px 0;
     cursor: pointer;
 }
 
-#iconbox .item.copy:hover, #iconbox .item.copy.hover {
+.iconbox .item.copy:hover, .iconbox .item.copy.hover {
     background-position: -160px -16px;
     cursor: pointer;
 }
 
-#iconbox .item.vip {
+.iconbox .item.vip {
     background-position: -176px 0;
     cursor: pointer;
 }
 
-#iconbox .item.vip:hover {
+.iconbox .item.vip:hover {
     background-position: -176px -16px;
     cursor: pointer;
 }
 
-#iconbox .item.pause {
+.iconbox .item.pause {
     background-position: -192px 0;
 }
 
-#iconbox .item.pause:hover {
+.iconbox .item.pause:hover {
     background-position: -192px -16px;
 }
 
-#iconbox .item.unpause {
+.iconbox .item.unpause {
     background-position: -208px 0;
 }
 
-#iconbox .item.unpause:hover {
+.iconbox .item.unpause:hover {
     background-position: -208px -16px;
 }
 
-#iconbox .item.delete {
+.iconbox .item.delete {
     background-position: -224px 0;
 }
 
-#iconbox .item.delete:hover {
+.iconbox .item.delete:hover {
     background-position: -224px -16px;
 }
 
-#iconbox .item.rename {
+.iconbox .item.rename {
     background-position: -240px 0;
 }
 
-#iconbox .item.rename:hover {
+.iconbox .item.rename:hover {
     background-position: -240px -16px;
 }
 
-#iconbox .item.reset {
+.iconbox .item.reset {
     background-position: -256px 0;
 }
 
-#iconbox .item.reset:hover {
+.iconbox .item.reset:hover {
     background-position: -256px -16px;
 }
 
-#iconbox .item.download {
+.iconbox .item.download {
     background-position: -272px 0;
 }
 
-#iconbox .item.download:hover {
+.iconbox .item.download:hover {
     background-position: -272px -16px;
 }
 
-#iconbox .item.upload {
+.iconbox .item.upload {
     background-position: -288px 0;
 }
 
-#iconbox .item.upload:hover {
+.iconbox .item.upload:hover {
     background-position: -288px -16px;
 }
 
-#iconbox .item.geo {
+.iconbox .item.geo {
     background-position: -304px 0;
 }
 
-#iconbox .item.geo:hover {
+.iconbox .item.geo:hover {
     background-position: -304px -16px;
 }
 
-#iconbox .item.view {
+.iconbox .item.view {
     background-position: -320px 0;
 }
 
-#iconbox .item.view:hover {
+.iconbox .item.view:hover {
     background-position: -320px -16px;
 }
 
-#iconbox .item.click {
+.iconbox .item.click {
     background-position: -336px 0;
 }
 
-#iconbox .item.click:hover {
+.iconbox .item.click:hover {
     background-position: -336px -16px;
 }
 
-#iconbox .item.data {
+.iconbox .item.data {
     background-position: -352px 0;
 }
 
-#iconbox .item.data:hover {
+.iconbox .item.data:hover {
     background-position: -352px -16px;
 }
 
-#iconbox .item.recreate {
+.iconbox .item.recreate {
     background-position: -368px 0;
 }
 
-#iconbox .item.recreate:hover {
+.iconbox .item.recreate:hover {
     background-position: -368px -16px;
 }
 
-#iconbox .item.graphic {
+.iconbox .item.graphic {
     background-position: -384px 0;
 }
 
-#iconbox .item.graphic:hover {
+.iconbox .item.graphic:hover {
     background-position: -384px -16px;
 }
 
-#iconbox .item:active {
+.iconbox .item:active {
     opacity: .8;
 }
 
@@ -839,7 +839,7 @@ select.textline {
     color: #FF6600;
 }
 
-#set_box .setlist .list:hover #iconbox .item {
+#set_box .setlist .list:hover .iconbox .item {
     opacity: 1;
 }
 
@@ -1530,20 +1530,30 @@ div#resize:hover {
     border-left: 0;
 }
 
-#infotable.country-selected #iconbox {
+#infotable.country-selected .iconbox {
     visibility: visible !important;
     opacity: .2;
 }
 
-#infotable.country-selected tbody tr:hover #iconbox {
+#infotable.country-selected tbody tr:hover .iconbox {
     opacity: 1;
 }
 
-#infotable tbody #iconbox {
+#infotable tbody .iconbox {
     visibility: hidden;
 }
 
-#infotable tbody tr:hover #iconbox, #infotable.account #iconbox {
+#infotable.country-selected .iconbox {
+    visibility: visible!important;
+    opacity: .1;
+}
+
+#infotable.country-selected tbody tr:hover .iconbox {
+    visibility: visible!important;
+    opacity: 1;
+}
+
+#infotable tbody tr:hover .iconbox, #infotable.account .iconbox {
     visibility: visible;
 }
 
