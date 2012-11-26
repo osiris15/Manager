@@ -1476,7 +1476,7 @@ div#resize:hover {
 }
 
 #infotable.country-selected .option {
-    width: 30px;
+    width: 20px;
 }
 
 #infotable tbody tr.check {
@@ -1530,26 +1530,17 @@ div#resize:hover {
     border-left: 0;
 }
 
-#infotable.country-selected .iconbox {
-    visibility: visible !important;
-    opacity: .2;
-}
-
-#infotable.country-selected tbody tr:hover .iconbox {
-    opacity: 1;
-}
-
 #infotable tbody .iconbox {
     visibility: hidden;
 }
 
 #infotable.country-selected .iconbox {
-    visibility: visible!important;
-    opacity: .1;
+    visibility: visible !important;
+    opacity: .3;
 }
 
 #infotable.country-selected tbody tr:hover .iconbox {
-    visibility: visible!important;
+    visibility: visible !important;
     opacity: 1;
 }
 
@@ -1989,9 +1980,11 @@ div#resize:hover {
     line-height: 27px;
     font-size: 1.5em;
 }
+
 range-box {
 
 }
+
 ul.numbers {
     display: block;
     margin: 10px -20px;
@@ -2043,7 +2036,7 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
 .handle {
     position: absolute;
     top: -4px;
-    margin-left:-8px ;
+    margin-left: -8px;
     width: 16px;
     height: 16px;
     background: url(../img/options.png) no-repeat -400px 0;
@@ -2060,10 +2053,11 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
     display: block;
     width: 100%;
     height: 16px;
-    background-color: rgba(0, 0, 0, .1);
+    background-color: rgba(0, 0, 0, .05);
     border-radius: 2px;
     text-align: center;
     z-index: 100;
+    font-weight: bold;
 }
 
 .mark {
@@ -2074,11 +2068,7 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
     height: 16px;
     background: #006699;
     border-radius: 2px;
-    opacity: .5;
-}
-
-.country-selected {
-    width: 500px;
+    opacity: .3;
 }
 
 .country-selected thead td {
@@ -2096,7 +2086,7 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
 }
 
 .country-selected .name {
-    width: auto;
+    width: 200px;
     font-weight: bold;
 }
 
@@ -2110,6 +2100,13 @@ h3.name-selected {
 }
 
 .view-selected {
+    width: 400px;
     max-height: 150px;
     overflow-y: auto;
+}
+
+.link-popup:hover {
+    color: #006699;
+    border-bottom: 1px dashed;
+    cursor: pointer;
 }
