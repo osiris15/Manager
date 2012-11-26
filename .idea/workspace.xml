@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="8bb9bc7d-8521-44a8-bde2-06f170492d09" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/css/main.css" afterPath="$PROJECT_DIR$/css/main.css" />
     </list>
     <ignored path="manager.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -376,7 +375,11 @@
       <created>1353950845073</created>
       <updated>1353950845073</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="w-geo">
+      <created>1353951516000</created>
+      <updated>1353951516000</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -458,7 +461,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="w-geo&#10;&#10;and #iconbox =&gt; .iconbox" />
+    <option name="LAST_COMMIT_MESSAGE" value="w-geo" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -484,8 +487,8 @@
     <MESSAGE value="Обновлена настройка гео для заданий, расширен список гео зон" />
     <MESSAGE value="обновлена локализация" />
     <MESSAGE value="w-geo&#10;&#10;настройка гео" />
-    <MESSAGE value="w-geo" />
     <MESSAGE value="w-geo&#10;&#10;and #iconbox =&gt; .iconbox" />
+    <MESSAGE value="w-geo" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
