@@ -6,48 +6,67 @@
     <meta name="robots" content="index, follow"/>
     <meta name="keywords" content=""/>
     <meta name="description" content=""/>
-    <link type="text/css" rel="stylesheet" href="http://manager.waspace.net/css/main.css"/>
-    <!--[if lte IE 9]>
-    <link href="http://manager.waspace.net/css/ie9.css" type="text/css" rel="stylesheet">
-    <![endif]-->
-    <!--[if lte IE 8]>
-    <link href="http://manager.waspace.net/css/ie8.css" type="text/css" rel="stylesheet">
-    <![endif]-->
-    <!--[if lte IE 7]>
-    <link href="http://manager.waspace.net/css/ie7.css" type="text/css" rel="stylesheet">
-    <![endif]-->
-    <!--[if lte IE 6]>
-    <link href="http://manager.waspace.net/css/ie6.css" type="text/css" rel="stylesheet">
-    <![endif]-->
-    <link href="http://manager.waspace.net/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link type="text/css" rel="stylesheet" href="css/main.css"/>
 </head>
 <body>
-<div class="country">
-    <div class="name">Российская федерация</div>
-    <div class="rate">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{TITLE}</title>
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="css/main.css" rel="stylesheet" type="text/css">
+    <script language="javascript" type="text/javascript" src="js/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.js"></script>
+</head>
+<body>
+<div id="popup_wrap">
+    <div id="popup_all">
+        <div id="popup_box">
+            <div id="popup">
+                <div class="p_title">
+                    Настройка геотаргетинга выбранной страны<b id="box_close"></b>
+                </div>
+                <div class="all">
+                    <div class="content">
+
+                        <div class="country">
+                            <div class="name">Российская федерация</div>
+                            <div class="rate">
         <span class="textline percent">
               <input name="" type="text" value="47">
         </span>
-        <b>%</b>
+                                <b>%</b>
+                            </div>
+                            <div class="clear"></div>
+                            <div class="range-box" style="width: 440px">
+                                <div class="range-bg" style="width: 47%"></div>
+                                <div class="handle" style="left:47%;"></div>
+                            </div>
+                            <ul class="numbers">
+                                <li>0</li>
+                                <li>10</li>
+                                <li>20</li>
+                                <li>30</li>
+                                <li>40</li>
+                                <li>50</li>
+                                <li>60</li>
+                                <li>70</li>
+                                <li>80</li>
+                                <li>90</li>
+                                <li>100</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <div id="m_buttons">
+                            <span class="bt">Сохранить</span><span class="bt gray">Отмена</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="clear"></div>
-    <div class="range-box">
-        <div class="range-bg" style="width: 47%"></div>
-        <div class="handle" style="left:47%;"></div>
-    </div>
-    <ul class="numbers">
-        <li>0</li>
-        <li>10</li>
-        <li>20</li>
-        <li>30</li>
-        <li>40</li>
-        <li>50</li>
-        <li>60</li>
-        <li>70</li>
-        <li>80</li>
-        <li>90</li>
-        <li>100</li>
-    </ul>
 </div>
 </body>
 </html>
