@@ -19,6 +19,11 @@ input, select, a, textarea, textarea:focus {
     border: 0;
 }
 
+select {
+    margin: 0;
+    padding: 0;
+}
+
 img {
     border: 0;
 }
@@ -44,7 +49,7 @@ embed, embed:active {
     outline: 0;
 }
 
-#clear {
+#clear, .clear {
     clear: both;
 }
 
@@ -416,40 +421,27 @@ embed, embed:active {
     background-position: -368px -16px;
 }
 
+#iconbox .item.graphic {
+    background-position: -384px 0;
+}
+
+#iconbox .item.graphic:hover {
+    background-position: -384px -16px;
+}
+
 #iconbox .item:active {
     opacity: .8;
 }
 
-.checkbox-container {
-    display: inline-block;
-    clear: both;
-}
-
-.checkbox-text {
-    display: inline-block;
-    vertical-align: middle;
-    line-height: 16px;
-    cursor: default;
-}
-
-.checkbox-text.left {
-    float: left;
-}
-
-.checkbox-text.right {
-    float: right;
-}
-
-.checkbox {
+#checkbox {
     display: inline-block;
     margin: 0 5px;
     width: 16px;
     height: 16px;
     line-height: 16px;
-    vertical-align: middle;
 }
 
-.checkbox b {
+#checkbox b {
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -458,31 +450,31 @@ embed, embed:active {
     cursor: default;
 }
 
-.checkbox b.uncheck {
+#checkbox b.uncheck {
     background-position: -64px 0;
 }
 
-.checkbox b.uncheck:hover {
+#checkbox b.uncheck:hover {
     background-position: -64px -16px;
 }
 
-.checkbox b.uncheck:active, .checkbox b.check:active, .checkbox b.tick:active {
+#checkbox b.uncheck:active, #checkbox b.check:active, #checkbox b.tick:active {
     opacity: .75;
 }
 
-.checkbox b.check {
+#checkbox b.check {
     background-position: -80px 0;
 }
 
-.checkbox b.check:hover {
+#checkbox b.check:hover {
     background-position: -80px -16px;
 }
 
-.checkbox b.tick {
+#checkbox b.tick {
     background-position: -96px 0;
 }
 
-.checkbox b.tick:hover {
+#checkbox b.tick:hover {
     background-position: -96px -16px;
 }
 
@@ -525,7 +517,11 @@ embed, embed:active {
     background-position: -12px -12px;
 }
 
-#textline {
+select.textline {
+    margin-top: 5px;
+}
+
+.textline {
     display: inline-block;
     margin: 0 -3px;
     padding: 0 3px;
@@ -534,9 +530,10 @@ embed, embed:active {
     width: 100%;
     border-radius: 2px;
     vertical-align: middle;
+    box-sizing: border-box;
 }
 
-#textline input {
+.textline input {
     display: block;
     width: 100%;
     margin: 0;
@@ -547,19 +544,26 @@ embed, embed:active {
     text-align: inherit;
 }
 
-#textline input[readonly*="readonly"] {
+.textline input[readonly*="readonly"] {
     cursor: default;
 }
 
-#textline.error {
+.textline.error {
     background: #fef0f2;
     border-color: #fa8f98;
     color: #e60a1c;
 }
 
-#textline.float {
+.textline.float {
     display: inline-block;
     width: auto;
+}
+
+.textline.percent {
+    width: 30px;
+    margin-right: 10px;
+    vertical-align: middle;
+    text-align: right;
 }
 
 #setbox .title {
@@ -997,8 +1001,12 @@ embed, embed:active {
     clear: both;
 }
 
+#popup .footer {
+    clear: both;
+}
+
 #text {
-    max-width: 600px;
+    max-width: 500px;
     min-width: 350px;
     font-size: 11px;
     padding: 3px 0 0;
@@ -1463,6 +1471,14 @@ div#resize:hover {
     background-color: #e4f2f3;
 }
 
+#infotable.country-selected tbody tr:nth-child(2n) {
+    background: none;
+}
+
+#infotable.country-selected .option {
+    width: 30px;
+}
+
 #infotable tbody tr.check {
     background-color: #ebfbd4;
 }
@@ -1512,6 +1528,15 @@ div#resize:hover {
     width: 120px;
     text-align: right;
     border-left: 0;
+}
+
+#infotable.country-selected #iconbox {
+    visibility: visible !important;
+    opacity: .2;
+}
+
+#infotable.country-selected tbody tr:hover #iconbox {
+    opacity: 1;
 }
 
 #infotable tbody #iconbox {
@@ -1675,7 +1700,7 @@ div#resize:hover {
     cursor: default;
 }
 
-#page_control span#textline {
+#page_control span.textline {
     width: 78px;
     display: inline-block;
 }
@@ -1933,6 +1958,145 @@ div#resize:hover {
     cursor: default;
 }
 
-.github.style {
+.country {
+    padding: 10px 20px;
+}
+
+.country .name {
+    float: left;
+    height: 27px;
+    line-height: 27px;
+}
+
+.rate {
+    float: right;
+}
+
+.rate b {
+    position: relative;
+    top: 2px;
+    height: 27px;
+    line-height: 27px;
+    font-size: 1.5em;
+}
+
+ul.numbers {
+    display: block;
+    margin: 10px -20px;
+    padding: 0 1px 0 0;
+    width: auto;
+    list-style-type: none;
+}
+
+ul.numbers li {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    font-weight: normal;
     text-align: center;
+}
+
+ul.numbers li:after {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    width: 1px;
+    height: 5px;
+    background: #ccc;
+}
+
+ul.numbers li:first-child:after, ul.numbers li:last-child:after {
+    content: "";
+    display: none;
+}
+
+.range-box {
+    position: relative;
+    display: inline-block;
+    margin-top: 10px;
+    height: 6px;
+    background-color: rgba(0, 0, 0, .1);
+    border-radius: 3px;
+}
+
+.range-bg {
+    position: absolute;
+    top: 0px;
+    height: 6px;
+    background-color: rgba(0, 0, 0, .3);
+    border-radius: 3px;
+}
+
+.handle {
+    position: absolute;
+    top: -4px;
+    width: 16px;
+    height: 16px;
+    background: url(../img/options.png) no-repeat -400px 0;
+    z-index: 2;
+}
+
+.handle:hover, .handle:focus, .handle:active {
+    background-position: -400px -16px;
+    cursor: pointer;
+}
+
+.mark-box {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 16px;
+    background-color: rgba(0, 0, 0, .1);
+    border-radius: 2px;
+    text-align: center;
+    z-index: 100;
+}
+
+.mark {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 16px;
+    background: #006699;
+    border-radius: 2px;
+    opacity: .5;
+}
+
+.country-selected {
+    width: 500px;
+}
+
+.country-selected thead td {
+    font-weight: bold;
+}
+
+.country-selected td {
+    padding: 0 5px !important;
+    border: 0 !important;
+}
+
+.country-selected .a2 {
+    width: 20px;
+    text-align: right;
+}
+
+.country-selected .name {
+    width: auto;
+    font-weight: bold;
+}
+
+.country-selected .range-view {
+    width: 100px;
+}
+
+h3.name-selected {
+    font-size: 1.2em;
+    color: #5290bb;
+}
+
+.view-selected {
+    max-height: 150px;
+    overflow-y: auto;
 }
