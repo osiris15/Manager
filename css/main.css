@@ -1486,6 +1486,9 @@ div#resize:hover {
 #infotable tbody tr:hover {
     background-color: #d9e3ea;
 }
+#infotable.country-selected tbody tr:hover {
+    background: none;
+}
 
 #infotable td {
     border: 1px solid #fff;
