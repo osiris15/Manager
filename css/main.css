@@ -2071,6 +2071,10 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
     opacity: .3;
 }
 
+.mark.recd {
+    background: #0b8d0e;
+}
+
 .country-selected thead td {
     font-weight: bold;
 }
@@ -2091,7 +2095,7 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
 }
 
 .country-selected .range-view {
-    width: 100px;
+    width: 80px;
 }
 
 h3.name-selected {
@@ -2100,7 +2104,7 @@ h3.name-selected {
 }
 
 .view-selected {
-    width: 400px;
+    width: 500px;
     max-height: 150px;
     overflow-y: auto;
 }
