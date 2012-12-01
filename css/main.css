@@ -1486,6 +1486,7 @@ div#resize:hover {
 #infotable tbody tr:hover {
     background-color: #d9e3ea;
 }
+
 #infotable.country-selected tbody tr:hover {
     background: none;
 }
@@ -1984,13 +1985,11 @@ div#resize:hover {
     font-size: 1.5em;
 }
 
-range-box {
-
-}
-
 ul.numbers {
     display: block;
-    margin: 10px -20px;
+    position: absolute;
+    top: 16px;
+    margin: 0 -20px;
     padding: 0 1px 0 0;
     width: auto;
     list-style-type: none;
@@ -2021,11 +2020,12 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
 
 .range-box {
     position: relative;
-    display: inline-block;
-    margin-top: 10px;
+    display: block;
+    margin:10px 0 20px 0;
     height: 6px;
     background-color: rgba(0, 0, 0, .1);
     border-radius: 3px;
+    width:440px;
 }
 
 .range-bg {
@@ -2062,14 +2062,16 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
     overflow: hidden;
     z-index: 100;
 }
+
 .mark-box .text {
     display: inline-block;
-    padding:0 5px;
+    padding: 0 5px;
     height: 18px;
     line-height: 18px;
     font-family: "Tahoma";
     font-size: .8em;
 }
+
 .mark {
     display: block;
     position: absolute;
@@ -2083,8 +2085,8 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
 }
 
 .mark.recd {
-    top:16px;
-    height:2px;
+    top: 16px;
+    height: 2px;
     background: #0b8d0e;
     opacity: 1;
     z-index: -1;
