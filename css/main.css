@@ -1989,22 +1989,25 @@ ul.numbers {
     display: block;
     position: absolute;
     top: 16px;
-    margin: 0 -20px;
+    margin: 0px -20px;
     padding: 0 1px 0 0;
     width: auto;
     list-style-type: none;
+    white-space: nowrap;
 }
 
 ul.numbers li {
     position: relative;
-    display: inline-block;
-    width: 40px;
+    margin: 0;
+    padding:0;
+    float:left;
+    width: 30px;
     font-weight: normal;
     text-align: center;
 }
 
 ul.numbers li:after {
-    content: "";
+    content: "" !important;
     position: absolute;
     top: -10px;
     left: 20px;
@@ -2021,11 +2024,11 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
 .range-box {
     position: relative;
     display: block;
-    margin:10px 0 20px 0;
+    margin: 10px 0 20px 0;
     height: 6px;
     background-color: rgba(0, 0, 0, .1);
     border-radius: 3px;
-    width:440px;
+    width: 400px;
 }
 
 .range-bg {
