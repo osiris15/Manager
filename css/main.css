@@ -2081,9 +2081,8 @@ ul.numbers li:first-child:after, ul.numbers li:last-child:after {
     top: 0;
     left: 0;
     height: 18px;
-    background: #FF6600;
+    background: #ffddc7;
     border-radius: 2px;
-    opacity: .22;
     z-index: -2;
 }
 
