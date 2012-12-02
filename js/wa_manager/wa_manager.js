@@ -48,6 +48,7 @@
 					setViewtargeting: 'setViewtargeting',
 					setClicktargeting: 'setClicktargeting',
                     setTimetargeting: 'setTimetargeting',
+					setTargetingCountry: 'setTargetingCountry',
 					domainAdd: 'domainAdd',
 					setDomain: 'setDomain',
                     console: 'console',
@@ -73,7 +74,8 @@
 				type: {
 					text: 'text',
 					password: 'password',
-					numericUpDown: 'numericUpDown'
+					numericUpDown: 'numericUpDown',
+					percent: 'percent'
 				}
 			},
 			textinfo: {},
@@ -1091,10 +1093,12 @@
 				regexp: /^.{0,}$/,
 				'class': {
 					error: 'error',
-					float: 'float'
+					float: 'float',
+					percent: 'percent'
 				},
 				checkData: false,
 				onError: function(){},
+				onChange: function(SelfObj){},
 				tooltip: null,
 				userCheckDataError: function(SelfObj, opts){return {state: false, callback: function(){}};},
 				blackList: [],
@@ -1102,7 +1106,7 @@
 			});
 
 			proto.Constructor = function(){
-				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('span','id,textline',opts.holder);
+				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('span','class,textline',opts.holder);
 					var type = 'text';
 					switch(opts.type){
 						case constant.type.text:
@@ -1114,6 +1118,10 @@
 						case constant.type.numericUpDown:
 							type = 'text';
 							$(parent).addClass(opts['class'].float);
+							break;
+						case constant.type.percent:
+							type = 'text';
+							$(parent).addClass(opts['class'].percent);
 							break;
 					};
 					var input = proto.Data.input = cwe('input','type,'+type,parent);
@@ -1144,6 +1152,21 @@
 					},300);
 					interval.start();
 				};
+				//on change
+				var _oldText = $(input).val();
+				$(input).bind('keyup change', function(e){
+					if(_oldText != $(input).val()){
+						_oldText = $(input).val();
+						opts.onChange(SelfObj);
+					};
+				});
+				var _interval = new wa_manager.utils.interval(function(){
+					if(_oldText != $(input).val()){
+						_oldText = $(input).val();
+						opts.onChange(SelfObj);
+					};
+				},300);
+				_interval.start();
 
 				//check data
 				SelfObj.SetError(checkData(proto.Data.input), true);
@@ -1167,6 +1190,9 @@
 			this.htmlElement = null;
 
 			//METHODS
+			this.Change = function(){
+				opts.onChange(SelfObj);
+			};
 			this.CheckText = function(){
 				//if(!wa_manager.utils.notMsgBoxes(wa_manager.utils.getMsgBoxes())) return;
 
@@ -2452,7 +2478,7 @@
 			});
 
 			proto.Constructor = function(){
-				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('span','id,iconbox',opts.holder);
+				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('span','class,iconbox',opts.holder);
 
 				$(parent).mousedown(function(e){
 					$(window).disableSelection();
@@ -4183,7 +4209,236 @@
             this.Toogle = proto.Toogle;
 
             proto.Init(opt, param);
-        }
+        },
+		markBox: function(opt, param){
+			var proto = new wa_manager.proto(),
+				cwe = wa_api.utils.cwe,
+				opts = proto.Opts,
+				SelfObj = this,
+				tooltip_attr = wa_manager.constants.attributes.tooltip;
+
+			//options
+			$.extend(true, opts, {
+				holder: document.body,
+				items: []//{name: "", value: "", valueDescr: "", tooltip: "", classes: [], main: false, order: 1}
+			});
+
+			proto.Constructor = function(){
+				var parent = SelfObj.htmlElement = proto.HtmlNodes.Main[0] = cwe("span","class,mark-box",opts.holder);
+					var text = cwe("span","class,text",parent);
+
+				$.each(opts.items, function(key, cfg){
+					opts.items[key] = $.extend(true, {
+						name: "",
+						value: "",
+						valueDescr: "",
+						tooltip: "",
+						classes: [],
+						main: false,
+						order: 100
+					}, cfg);
+				});
+				opts.items.sort(function(a,b){
+					return a.order- b.order;
+				});
+				$.each(opts.items, function(key, cfg){
+					$.extend(true, cfg, {
+						holder: parent,
+						valueChanged: function(mark){
+							if(mark.state.main) $(text).text(mark.GetValue() + mark.GetValueDescr());
+							setTimeout(function(){
+								var tooltipString = [];
+								$.each(SelfObj.items, function(key, _mark){
+									tooltipString.push(_mark.GetToolTip() + ": " + _mark.GetValue() + _mark.GetValueDescr());
+								});
+								SelfObj.SetToolTip(tooltipString.join("<br />"));
+							}, 300);
+						}
+					});
+					SelfObj.items[cfg.name] = new mark(cfg, {visible: true});
+				});
+			};
+
+			function mark(opt, param){
+				var proto = new wa_manager.proto(),
+					cwe = wa_api.utils.cwe,
+					opts = proto.Opts,
+					SelfObj = this,
+					tooltip_attr = wa_manager.constants.attributes.tooltip;
+
+				//options
+				$.extend(true, opts, {
+					holder: document.body,
+					value: "",
+					valueDescr: "",
+					tooltip: "",
+					classes: [],
+					main: false,
+					valueChanged: function(value){}
+				});
+
+				proto.Constructor = function(){
+					var parent = SelfObj.htmlElement = proto.HtmlNodes.Main[0] = cwe("b","class,mark",opts.holder);
+					//add classes
+					$(parent).addClass(opts.classes.join(" "));
+					//set main property
+					SelfObj.state.main = opts.main;
+					//set value
+					SelfObj.SetValue(opts.value);
+					//set tooltip
+					SelfObj.SetToolTip(opts.tooltip);
+				};
+
+				//PROPERTYS
+				this.state = {
+					main: false
+				};
+				this.htmlElement = null;
+
+				//METHODS
+				this.SetToolTip = function(text){
+					opts.tooltip = text;
+					//$(proto.HtmlNodes.Main[0]).attr(tooltip_attr, opts.tooltip + ": " + opts.value + opts.valueDescr);
+				};
+				this.SetValue = function(value){
+					opts.value = value;
+					$(proto.HtmlNodes.Main[0]).css({
+						width: opts.value + "%"
+					});
+
+					SelfObj.SetToolTip(opts.tooltip);
+
+					opts.valueChanged(SelfObj);
+				};
+
+				this.GetToolTip = function(){
+					return opts.tooltip;
+				};
+				this.GetValue = function(){
+					return opts.value;
+				};
+				this.GetValueDescr = function(){
+					return opts.valueDescr;
+				};
+
+				this.Destroy = proto.Destroy;
+				this.Show = proto.Show;
+				this.Hide = proto.Hide;
+				this.Toogle = proto.Toogle;
+
+				proto.Init(opt, param);
+			};
+
+			//PROPERTYS
+			this.state = {};
+			this.htmlElement = null;
+			this.items = {};
+
+			//METHODS
+			this.GetMark = function(name){
+				return SelfObj.items[name];
+			};
+			this.SetToolTip = function(text){
+				$(proto.HtmlNodes.Main[0]).attr(tooltip_attr, text);
+			};
+
+			this.Destroy = proto.Destroy;
+			this.Show = proto.Show;
+			this.Hide = proto.Hide;
+			this.Toogle = proto.Toogle;
+
+			proto.Init(opt, param);
+		},
+		slider: function(opt, param){
+			var proto = new wa_manager.proto(),
+				cwe = wa_api.utils.cwe,
+				opts = proto.Opts,
+				SelfObj = this,
+				tooltip_attr = wa_manager.constants.attributes.tooltip;
+
+			//options
+			$.extend(true, opts, {
+				holder: document.body,
+				min: 0,
+				max: 100,
+				step: 10,
+				value: 0,
+				pixelWithPercent: 1,
+				onChange: function(slider){}
+			});
+
+			proto.Constructor = function(){
+				var parent = SelfObj.htmlElement = proto.HtmlNodes.Main[0] = cwe("div","class,range-box",opts.holder);
+					var range = proto.Data.range = cwe("div","class,range-bg",parent);
+					var handle = proto.Data.handle = cwe("div","class,handle",parent);
+					var numbers = cwe("ul","class,numbers",parent);
+					for(var i=opts.min; i<=opts.max; i+=opts.step) $(cwe("li","",numbers)).text(i);
+					$(parent).disableSelection();
+
+				//set pixel with percent
+				opts.pixelWithPercent = $(parent).width() / 100;
+
+				//set value
+				SelfObj.SetValue(opts.value);
+
+				//set event changes
+				var change = false,
+					handleData = {
+						x: 0,
+						y: 0
+					},
+					startValue = SelfObj.GetValue();
+				$(handle).mousedown(function(e){
+					$(window).disableSelection();
+					change = true;
+
+					handleData.x = e.pageX;
+					handleData.y = e.pageY;
+
+					startValue = SelfObj.GetValue()
+				});
+				$(window).mouseup(function(e){
+					change = false;
+
+					$(window).enableSelection();
+				});
+				$(window).mousemove(function(e){
+					if(change){
+						SelfObj.SetValue(startValue + Math.ceil((e.pageX - handleData.x)/opts.pixelWithPercent));
+					};
+				});
+			};
+
+			//PROPERTYS
+			this.state = {};
+			this.htmlElement = null;
+
+			//METHODS
+			this.GetValue = function(){
+				return opts.value;
+			};
+			this.SetValue = function(value){
+				if(value < opts.min) opts.value = opts.min;
+				else if(value >= opts.min && value <= opts.max) opts.value = value;
+				else opts.value = opts.max;
+
+				$(proto.Data.range).css({
+					width: opts.value + "%"
+				});
+				$(proto.Data.handle).css({
+					left: opts.value + "%"
+				});
+
+				opts.onChange(SelfObj);
+			};
+
+			this.Destroy = proto.Destroy;
+			this.Show = proto.Show;
+			this.Hide = proto.Hide;
+			this.Toogle = proto.Toogle;
+
+			proto.Init(opt, param);
+		}
 	};
 
 	//FORMS
@@ -4583,7 +4838,8 @@
                 areaset: 'areaset',
                 nameTask: 'nameTask',
                 beforeClick: 'beforeClick',
-                afterClick: 'afterClick'
+                afterClick: 'afterClick',
+				slider: 'slider'
 			};
 			//options
 			var default_options = {
@@ -5293,9 +5549,9 @@
 						buttons: {
 							ok: {
                                 click: function(){
-                                    var summ = 0, data = proto.Data.areaset.GetControl(inputs.graphGeo).GetData();
-                                    $.each(data.min, function(key, value){
-                                        summ +=value[1];
+                                    var summ = 0, data = opts.setGeotargeting.data;
+                                    $.each(data, function(key, val){
+                                        summ +=val.value;
                                     });
                                     if(summ < 100){
                                         var msgbox = new wa_manager.form.MessageBox({
@@ -5317,10 +5573,10 @@
                                     function save(){
                                         SelfObj.Hide({effect: true});
                                         var geoData = [];
-                                        $.each(data.min, function(key, value){
+                                        $.each(data, function(key, val){
                                             geoData.push({
-                                                id: opts[opts.type]._data.reference.min[value[0]],
-                                                value: value[1]
+                                                id: val.id,
+                                                value: val.value
                                             });
                                         });
                                         wa_api.methods.SetGeoTargeting({
@@ -5357,48 +5613,210 @@
 						controls: [
 							{
 								name: inputs.graphGeo,
-								text: language.type.setGeoTargeting.graphName,
+								text: "",
 								control: function(holder){
-									//reform data for graphic
-									opts[opts.type]._data.reference = {};
-									opts[opts.type]._data.graphData = {};
-
-									$.each(opts[opts.type].data, function(graphName, graphData){
-										if(!opts[opts.type]._data.reference[graphName]){
-											opts[opts.type]._data.reference[graphName] = {};
+									opts[opts.type].data.sort(function(a,b){
+										if(a.nameFull == b.nameFull){
+											return 0;
+										}else{
+											return ((a.nameFull < b.nameFull) ? -1 : 1);
 										};
-
-										if(!opts[opts.type]._data.graphData[graphName]){
-											opts[opts.type]._data.graphData[graphName] = {};
-											opts[opts.type]._data.graphData[graphName].value = [];
-											opts[opts.type]._data.graphData[graphName].data = {};
-										};
-
-										var index = 1;
-										$.each(graphData.value, function(key, arr_val){
-											opts[opts.type]._data.graphData[graphName].value.push([index, arr_val[1]]);
-											opts[opts.type]._data.reference[graphName][index] = arr_val[0];
-
-											index++;
-										});
-
-										index = 1;
-										$.each(graphData.data, function(key, data){
-											//opts[opts.type]._data.graphData[graphName].data[index] = data;
-											opts[opts.type]._data.graphData[graphName].data[index] = graphData.data[opts[opts.type]._data.reference[graphName][index]];
-
-											index++;
-										});
 									});
-									//console.log(opts[opts.type].data);
-									//console.log(opts[opts.type]._data);
 
-									//set graph control
-									return new wa_manager.control.graphic({
+									var countryInput = new wa_manager.control.textline({
 										holder: holder,
-										type: wa_manager.constants.control.graphic.type.geoTargeting,
-										data: opts[opts.type]._data.graphData
+										checkData: false,
+										focus: true,
+										tags: {
+											placeholder: language.type.setGeoTargeting.enterTextToFind
+										},
+										onChange: function(textline){
+											//delete all country option
+											while(proto.Data.countryList.childNodes.length > 0){
+												$(proto.Data.countryList.childNodes[0]).remove();
+											};
+											$("<option style=\"visibility: hidden;\">none</option>").appendTo(countryList);
+
+											var arr = [],
+												search = textline.GetValue();
+
+											$.each(opts[opts.type].data, function(key, val){
+												if((val.name.indexOf(search) != -1 || val.nameFull.indexOf(search) != -1) && val.value == 0) arr.push(val);
+											});
+
+											$.each(arr, function(key, val){
+												createOption(val, proto.Data.countryList);
+											});
+										}
 									},{visible: true});
+
+									var countryList = proto.Data.countryList = cwe("select",{
+										"class": "textline country-list",
+										size: 5
+									},holder);
+									$("<option style=\"visibility: hidden;\">none</option>").appendTo(countryList);
+
+									function createOption(data, holder){
+										var option = cwe("option","",holder);
+										$(option).text(data.nameFull);
+
+										option.country = data;
+
+										$(option).dblclick(function(e){
+											var msgBox = new wa_manager.form.MessageBox({
+												type: wa_manager.constants.form.messagebox.type.setTargetingCountry,
+												setTargetingCountry: {
+													nameFull: data.nameFull,
+													value: data.value,
+													success: function(value){
+														data.value = value;
+
+														if(data.value > 0){
+															new country({
+																holder: containerSelected,
+																data: data,
+																valueChanged: function(_data){
+																	data.value = _data.value;
+																	countryInput.Change();
+																},
+																destroyCallback: function(cntry){
+																	countryInput.Change();
+																}
+															},{visible: true});
+															countryInput.Change();
+														};
+													}
+												}
+											},{visible: false});
+											msgBox.Show({effect: true});
+										});
+
+										return option;
+									};
+
+									countryInput.Change();
+
+									$("<h3 class=\"name-selected\">" + language.type.setGeoTargeting.selectedCountries + "</h3>").appendTo(holder);
+									var selected = cwe("div","class,view-selected",holder);
+									var containerSelected = cwe("tbody", "", cwe("table","id,infotable;class,country-selected",selected));
+									$.each(opts[opts.type].data, function(key, val){
+										if(val.value > 0) new country({
+											holder: containerSelected,
+											data: val,
+											valueChanged: function(_val){
+												val.value = _val.value;
+											},
+											destroyCallback: function(cntry){
+												countryInput.Change();
+											}
+										},{visible: true});;
+									});
+
+									function country(opt, param){
+										var proto = new wa_manager.proto(),
+											cwe = wa_api.utils.cwe,
+											opts = proto.Opts,
+											SelfObj = this;
+
+										//options
+										$.extend(true, opts, {
+											holder: document.body,
+											data: {
+												id: 0,
+												value: 0,
+												received: 0,
+												name: "",
+												nameFull: "",
+												valueChanged: function(cntry){},
+												destroyCallback: function(cntry){}
+											}
+										});
+
+										proto.Constructor = function(){
+											var parent = SelfObj.htmlElement = proto.HtmlNodes.Main[0] = cwe("tr","",opts.holder);
+												var shortName = $(cwe("td","class,a2",parent)).text(opts.data.name);
+												var fullName = $(cwe("span","class,link-popup",cwe("td","class,name",parent))).text(opts.data.nameFull);
+												var iconBox = new wa_manager.control.iconBox({
+													holder: cwe("td","class,option",parent),
+													items: {
+														'delete': {
+															onClick: function(){
+																SelfObj.SetValue(0);
+																SelfObj.Destroy();
+																opts.destroyCallback(SelfObj);
+															},
+															show: true,
+															order: 1
+														}
+													}
+												},{visible: true});
+												var markBox = proto.Data.markBox = new wa_manager.control.markBox({
+													holder: cwe("td","class,range-view",parent),
+													items: [
+														{
+															name: "set",
+															value: opts.data.value,
+															valueDescr: "%",
+															tooltip: language.type.setGeoTargeting.setted,
+															classes: [],
+															main: true,
+															order: 1
+														},
+														{
+															name: "give",
+															value: opts.data.received,
+															valueDescr: "%",
+															tooltip: language.type.setGeoTargeting.gived,
+															classes: ["recd"],
+															main: false,
+															order: 2
+														}
+													]
+												},{visible: true});
+
+												$(fullName).click(function(e){
+													var msgBox = new wa_manager.form.MessageBox({
+														type: wa_manager.constants.form.messagebox.type.setTargetingCountry,
+														setTargetingCountry: {
+															nameFull: opts.data.nameFull,
+															value: opts.data.value,
+															success: function(value){
+																SelfObj.SetValue(value);
+
+																if(opts.data.value == 0){
+																	SelfObj.Destroy();
+																	opts.destroyCallback(SelfObj);
+																};
+															}
+														}
+													},{visible: false});
+													msgBox.Show({effect: true});
+												});
+										};
+
+										//PROPERTYS
+										this.state = {};
+										this.htmlElement = null;
+
+										//METHODS
+										this.GetValue = function(){
+											return opts.data.value;
+										};
+										this.SetValue = function(value){
+											opts.data.value = value;
+											proto.Data.markBox.GetMark("set").SetValue(value);
+											opts.valueChanged({value: value});
+										};
+
+										this.Destroy = proto.Destroy;
+										this.Show = proto.Show;
+										this.Hide = proto.Hide;
+										this.Toogle = proto.Toogle;
+
+										proto.Init(opt, param);
+									};
+
+									return countryInput;
 								}
 							}
 						]
@@ -6853,7 +7271,86 @@
                                 }
                             }
                         ]
-                    }
+                    },
+					setTargetingCountry: {
+						buttons: {
+							ok: {
+								text: button_lang.save,
+								click: function(){
+									SelfObj.Destroy({
+										effect: true,
+										callback: function(){
+											opts.setTargetingCountry.success(proto.Data.areaset.GetControl(inputs.slider).GetValue());
+										}
+									});
+								},
+								show: true
+							},
+							cancel: {
+								text: button_lang.cancel,
+								click: function(){
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											if(opts.onClickButton[button_constant.button.name.ok]) opts.onClickButton[button_constant.button.name.cancel](SelfObj);
+											else SelfObj.Destroy();
+										}
+									});
+								},
+								show: true
+							}
+						},
+						controls: [
+							{
+								name: inputs.slider,
+								text: "",
+								control: function(holder){
+									var country = cwe("div","class,country",holder);
+										$(cwe("div","class,name",country)).text(opts.setTargetingCountry.nameFull);
+										var rate = cwe("div","class,rate",country);
+
+									var inputPercent = new wa_manager.control.textline({
+										holder: rate,
+										regexp: /^\d{1,3}$/,
+										checkData: true,
+										type: wa_manager.constants.control.textline.type.percent,
+										value: opts.setTargetingCountry.value,
+										/*onChange: function(textline){
+											var value = textline.GetValue();
+
+											if(!textline.state.error){
+												slider.SetValue(value);
+											};
+										},
+										userCheckDataError: function(textline, opts){
+											var output = {state: false, callback: function(){}},
+												value = parseInt(textline.GetValue());
+
+											if(value >= 0 && value <= 100) output.state = false;
+											else output.state = true;
+
+											return output;
+										},*/
+										tags: {
+											readonly: "true"
+										}
+									},{visible: true});
+									$(cwe("b","",rate)).text("%");
+									cwe("div","class,clear",country);
+
+									var slider = new wa_manager.control.slider({
+										holder: country,
+										value: opts.setTargetingCountry.value,
+										onChange: function(slider){
+											inputPercent.SetValue(slider.GetValue());
+										}
+									},{visible: true});
+
+									return slider;
+								}
+							}
+						]
+					}
 				},
 				onClickButton: {},
 				maskEdit: {
@@ -6901,8 +7398,7 @@
 					text: language.type.setGeoTargeting.text,
 					folderId: null,
                     taskId: 0,
-                    data: {},
-					_data: {},
+                    data: [],
 					success: function(param){}
 				},
 				setViewtargeting: {
@@ -6983,7 +7479,14 @@
                     beforeClick: 0,
                     afterClick: 0,
                     success: function(data){}
-                }
+                },
+				setTargetingCountry: {
+					title: language.type.setTargetingCountry.title,
+					text: language.type.setTargetingCountry.text,
+					nameFull: "",
+					value: 0,
+					success: function(value){}
+				}
 			};
 
 			$.each(default_options.setControl, function(key, value){
@@ -10308,41 +10811,23 @@
                                         taskId: opts.taskId,
                                         callback: function(data){
                                             data = data[jsonItem.GeoTargeting];
-											data.sort(function(a,b){
-												return a[jsonItem.IdZone]-b[jsonItem.IdZone];
-											});
-                                            var graphData = {
-												give: {
-													value: [],
-													data: {}
-												},
-                                                min: {
-                                                    value: [],
-                                                    data: {}
-                                                }
-                                            };
+                                            var geoData = [];
                                             $.each(data, function(key, value){
-                                                graphData.min.value.push([value[jsonItem.IdZone], value[jsonItem.Target]]);
-                                                graphData.min.data[value[jsonItem.IdZone]] = {
-                                                    xTick: value[jsonItem.Name],
-                                                    tooltip: wa_manager.language.control.graphic.zoneName[value[jsonItem.Name]]
-                                                };
-
-												graphData.give.value.push([value[jsonItem.IdZone], value[jsonItem.Recd]]);
-												graphData.give.data[value[jsonItem.IdZone]] = {
-													xTick: value[jsonItem.Name],
-													tooltip: wa_manager.language.control.graphic.zoneName[value[jsonItem.Name]]
-												};
+												geoData.push({
+													id: value[jsonItem.IdZone],
+													value: value[jsonItem.Target],
+													received: value[jsonItem.Recd],
+													name: value[jsonItem.Name],
+													nameFull: wa_manager.language.control.graphic.zoneName[value[jsonItem.Name]]
+												});
                                             });
-                                            graphData.min.value.sort(function(a,b){return a[0]-b[0]});
-											graphData.give.value.sort(function(a,b){return a[0]-b[0]});
 
                                             var msg = new wa_manager.form.MessageBox({
                                                 type: wa_manager.constants.form.messagebox.type.setGeotargeting,
                                                 setGeotargeting: {
                                                     folderId: opts.folderId,
                                                     taskId: opts.taskId,
-                                                    data: graphData
+                                                    data: geoData
                                                 }
                                             },{visible: false});
                                             msg.Show({effect: true});
@@ -10658,14 +11143,6 @@
 			}
 		});
 
-		//get home path
-		var scripts = document.getElementsByTagName('script');
-		for(var i=0;i<scripts.length;i++)
-			if(scripts[i].getAttribute('src') != null && scripts[i].getAttribute('src').indexOf('wa_manager.js') > 0){
-				base_path = scripts[i].getAttribute('src').substr(0, scripts[i].getAttribute('src').length-13);
-				break;
-			};
-
 		//set options
 		wa_manager.options = $.extend(true, opts, obj);
 
@@ -10721,6 +11198,13 @@
                     msgbox.Show({effect: true});
                 };
             });
+			/*window.slider = new wa_manager.control.slider({
+				holder: $("<div></div>").css({
+					padding: 50,
+					margin: 100
+				}).appendTo(document.body),
+				value: 47
+			},{visible: true});*/
 		});
 	};
 })(window);
