@@ -5553,7 +5553,7 @@
                                     $.each(data, function(key, val){
                                         summ +=val.value;
                                     });
-                                    if(summ < 100){
+                                    if(summ > 0 && summ < 100){
                                         var msgbox = new wa_manager.form.MessageBox({
                                             title: wa_manager.language.form.messagebox.title.notification,
                                             text: language.type.setGeoTargeting.lessThan100,
@@ -5566,7 +5566,20 @@
                                             }
                                         },{});
                                         msgbox.Show({effect: true});
-                                    }else{
+                                    }else if(summ == 0){
+										var msgbox = new wa_manager.form.MessageBox({
+											title: wa_manager.language.form.messagebox.title.notification,
+											text: language.type.setGeoTargeting.geoIs0,
+											type: wa_manager.constants.form.messagebox.type.confirm,
+											onClickButton: {
+												ok: function(){
+													msgbox.Destroy();
+													save();
+												}
+											}
+										},{});
+										msgbox.Show({effect: true});
+									}else{
                                         save();
                                     };
                                     
