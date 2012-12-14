@@ -8341,10 +8341,86 @@
 									title: language.form.messagebox.title.notification,
 									text: language.form.reg.success,
 									onClickButton: {
-										ok: function(){
-											wa_manager.data.form.main.SetActiveForm({
-												form: function(){
-													return new wa_manager.form.Auth({holder: wa_manager.data.form.main.GetContentHolder()},{visible: false});
+										ok: function(mbox){
+											mbox.Destroy({
+												callback: function(){
+													var msg = new wa_manager.form.MessageBox({
+														type: constant.form.messagebox.type.confirmRegister,
+														confirmRegister: {
+															mail: areaset.GetControl(inputs.mail).GetValue(),
+															success: function(data){
+																var _msgbox = new wa_manager.form.MessageBox({
+																	title: wa_manager.language.form.messagebox.title.notification,
+																	text: wa_manager.language.form.messagebox.type.confirmRegister.success,
+																	type: wa_manager.constants.form.messagebox.type.info,
+																	onClickButton: {
+																		ok: function(mbox){
+																			wa_api.methods.Auth({
+																				mail: areaset.GetControl(inputs.mail).GetValue(),
+																				password: areaset.GetControl(inputs.password).GetValue(),
+																				remember: false,
+																				callback: function(data){
+																					mbox.Destroy();
+
+																					wa_manager.data.user.token = data[wa_api.Constants.OperationItem.Token];
+																					wa_manager.data.form.main.SetActiveForm({
+																						form: function(){
+																							return new wa_manager.form.Account({holder: wa_manager.data.form.main.GetContentHolder()},{visible: false});
+																						}
+																					});
+																				},
+																				exception: {
+																					NotMatch: function(data){
+																						var mb = new wa_manager.form.MessageBox({
+																							title: language.form.messagebox.title.error,
+																							text: language.form.auth.exception.NotMatch,
+																							type: constant.form.messagebox.type.error
+																						},{});
+																						mb.Show({
+																							effect: true,
+																							callback: function(){
+																								areaset.GetControl(inputs.mail).SetVisualError(true);
+																								areaset.GetControl(inputs.password).SetVisualError(true);
+																							}
+																						});
+																					},
+																					SessionLimit: function(data){
+																						var mb = new wa_manager.form.MessageBox({
+																							title: language.form.messagebox.title.error,
+																							text: language.form.auth.exception.SessionLimit,
+																							type: constant.form.messagebox.type.error
+																						},{});
+																						mb.Show({
+																							effect: true,
+																							callback: function(){
+																								areaset.GetControl(inputs.mail).SetError(false);
+																								areaset.GetControl(inputs.password).SetError(false);
+																							}
+																						});
+																					}
+																				}
+																			});
+																		}
+																	}
+																},{visible: false});
+																_msgbox.Show({effect: true});
+															}
+														},
+														onClickButton: {
+															cancel: function(mbox){
+																mbox.Destroy({
+																	callback: function(){
+																		wa_manager.data.form.main.SetActiveForm({
+																			form: function(){
+																				return new wa_manager.form.Auth({holder: wa_manager.data.form.main.GetContentHolder()},{visible: false});
+																			}
+																		});
+																	}
+																});
+															}
+														}
+													},{visible: false});
+													msg.Show({effect: true});
 												}
 											});
 										}
@@ -8915,25 +8991,10 @@
 								value: (data[jsonItem.Wmr]) ? data[jsonItem.Wmr] : language.notAvailable
 							},
 							surfingKey: {
-								value: language.notAvailable
+								value: (data[jsonItem.SurfingKey]) ? data[jsonItem.SurfingKey] : language.notAvailable
 							},
 							readonlyKey: {
-								value: language.notAvailable
-							}
-						});
-
-						wa_api.methods.GetAccessKeys({
-							token: wa_manager.methods.GetToken(),
-							callback: function(data){
-								SelfObj.ChangeTextAndValue({
-									surfingKey: {
-										value: data[jsonItem.SurfingKey]
-									},
-									readonlyKey: {
-										value: data[jsonItem.ReadonlyKey]
-									}
-								});
-								SelfObj.Show({effect: true});
+								value: (data[jsonItem.ReadonlyKey]) ? data[jsonItem.ReadonlyKey] : language.notAvailable
 							}
 						});
 					}
