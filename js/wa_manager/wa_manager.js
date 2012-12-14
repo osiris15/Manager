@@ -27,7 +27,8 @@
 		cookie: {
 			token: 'token',
 			language: 'lang',
-			expiriesday: 30
+			expiriesday: 30,
+			mail: 'mail'
 		},
 		language: {
 			ru: 'ru_ru',
@@ -53,7 +54,8 @@
 					setDomain: 'setDomain',
                     console: 'console',
                     addTask: 'addTask',
-                    editTask: 'editTask'
+                    editTask: 'editTask',
+					confirmRegister: 'confirmRegister'
 				},
 				'class': {
 					info: null,
@@ -2081,7 +2083,7 @@
 					'class': null,
 					onClick: function(){},
 					order: 4,
-					show: true
+					show: false
 				},
 				logout: {
 					text: wa_manager.language.control.generalMenu.items.logout.text,
@@ -4839,7 +4841,9 @@
                 nameTask: 'nameTask',
                 beforeClick: 'beforeClick',
                 afterClick: 'afterClick',
-				slider: 'slider'
+				slider: 'slider',
+				codeConfirm: "codeConfirm",
+				mail: "mail"
 			};
 			//options
 			var default_options = {
@@ -7363,6 +7367,120 @@
 								}
 							}
 						]
+					},
+					confirmRegister: {
+						buttons: {
+							ok: {
+								text: button_lang.activate,
+								click: function(){
+									SelfObj.ErrorHide();
+
+									proto.Data.areaset.GetControl(inputs.mail).CheckText();
+									if(proto.Data.areaset.GetControl(inputs.mail).state.error){
+										SelfObj.ErrorShow(language.type.confirmRegister.mail.error);
+										return;
+									};
+
+									proto.Data.areaset.GetControl(inputs.codeConfirm).CheckText();
+									if(proto.Data.areaset.GetControl(inputs.codeConfirm).state.error){
+										SelfObj.ErrorShow(language.type.confirmRegister.codeConfirm.error);
+										return;
+									};
+
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											wa_api.methods.ConfirmRegister({
+												mail: proto.Data.areaset.GetControl(inputs.mail).GetValue(),
+												code: proto.Data.areaset.GetControl(inputs.codeConfirm).GetValue(),
+												callback: function(){
+													SelfObj.Destroy({
+														callback: function(){
+															opts.confirmRegister = $.extend(true, opts.confirmRegister, {
+																mail: proto.Data.areaset.GetControl(inputs.mail).GetValue(),
+																codeConfirm: proto.Data.areaset.GetControl(inputs.codeConfirm).GetValue()
+															});
+
+															opts.confirmRegister.success(opts.confirmRegister);
+														}
+													});
+												},
+												ge_callback: function(){
+													SelfObj.Show({effect: true});
+												},
+												exception: {
+													WrongConfirmCode: function(data){
+														var msgbox = new wa_manager.form.MessageBox({
+															title: wa_manager.language.form.messagebox.title.error,
+															text: language.type.confirmRegister.exception.WrongConfirmCode.text,
+															type: wa_manager.constants.form.messagebox.type.error,
+															onClickButton: {
+																ok: function(mbox){
+																	mbox.Destroy({
+																		callback: function(){
+																			SelfObj.Show({effect: true});
+																		}
+																	});
+																}
+															}
+														},{});
+														msgbox.Show({effect: true});
+													}
+												}
+											});
+										}
+									});
+								},
+								show: true
+							},
+							cancel: {
+								text: button_lang.cancel,
+								click: function(){
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											if(opts.onClickButton[button_constant.button.name.ok]) opts.onClickButton[button_constant.button.name.cancel](SelfObj);
+											else SelfObj.Destroy();
+										}
+									});
+								},
+								show: true
+							}
+						},
+						controls: [
+							{
+								name: inputs.mail,
+								text: language.type.confirmRegister.mail.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										focus: true,
+										value: opts.confirmRegister.mail,
+										tooltip:  language.type.confirmRegister.mail.tooltip,
+										minLength: limits.Account.Mail.Length.Min,
+										maxLength:  limits.Account.Mail.Length.Max,
+										regexp: regexp.mail,
+										checkData: true
+									},{visible: true});
+								}
+							},
+							{
+								name: inputs.codeConfirm,
+								text: language.type.confirmRegister.codeConfirm.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										focus: false,
+										value: opts.confirmRegister.codeConfirm,
+										tooltip:  language.type.confirmRegister.codeConfirm.tooltip,
+										minLength: limits.Confirm.Code.Length.Min,
+										maxLength:  limits.Confirm.Code.Length.Max,
+										regexp: regexp.codeConfirm,
+										checkData: true
+									},{visible: true});
+								}
+							}
+						]
 					}
 				},
 				onClickButton: {},
@@ -7499,6 +7617,13 @@
 					nameFull: "",
 					value: 0,
 					success: function(value){}
+				},
+				confirmRegister: {
+					title: language.type.confirmRegister.title,
+					text: language.type.confirmRegister.text,
+					mail: "",
+					codeConfirm: "",
+					success: function(value){}
 				}
 			};
 
@@ -7543,8 +7668,8 @@
 						SelfObj.Hide({
 							effect: true,
 							callback: function(){
-								if(opts.onClickButton.cancel) opts.onClickButton.cancel();
-								else if(opts.onClickButton.ok && (opts.type == constant.type.error || opts.type == constant.type.info)) opts.onClickButton.ok();
+								if(opts.onClickButton.cancel) opts.onClickButton.cancel(SelfObj);
+								else if(opts.onClickButton.ok && (opts.type == constant.type.error || opts.type == constant.type.info)) opts.onClickButton.ok(SelfObj);
 								else SelfObj.Destroy();
 							}
 						});
@@ -7833,62 +7958,67 @@
 						areaset.GetControl(inputs.password).SetError(false);
 
 						var remember = rememberMe.state.check;
-						if(!wa_manager.data.control.loader.state.work) wa_api.methods.Auth({
-							mail: areaset.GetControl(inputs.mail).GetValue(),
-							password: areaset.GetControl(inputs.password).GetValue(),
-							remember: remember,
-							callback: function(data){
-								//save login and password on fake form
-								/*if($("iframe[name=iframe-auth]").length == 0) $(cwe('iframe','name,iframe-auth',document.body)).hide();
-								var fake_form = document.forms['form-spec-auth'];
-								fake_form['wa_email'].value = areaset.GetControl(inputs.mail).GetValue();
-								fake_form['wa_password'].value = areaset.GetControl(inputs.password).GetValue();
-								$(fake_form["submit"]).click();
-								$("iframe[name=iframe-auth]").load(function(){
-									$("iframe[name=iframe-auth]").load(function(){
-										$("iframe[name=iframe-auth]").remove();
-									});
-								});*/
+						if(!wa_manager.data.control.loader.state.work){
+							//save mail to temp var
+							wa_manager.utils.storage.Set(wa_manager.constants.cookie.mail, areaset.GetControl(inputs.mail).GetValue());
 
-								wa_manager.data.user.token = data[wa_api.Constants.OperationItem.Token];
-								if(remember) wa_manager.utils.storage.Set(wa_manager.constants.cookie.token, wa_manager.data.user.token);
-								wa_manager.data.form.main.SetActiveForm({
-									form: function(){
-										return new wa_manager.form.Account({holder: wa_manager.data.form.main.GetContentHolder()},{visible: false});
-									}
-								});
-							},
-							exception: {
-								NotMatch: function(data){
-									var mb = new wa_manager.form.MessageBox({
-										title: language.form.messagebox.title.error,
-										text: language.form.auth.exception.NotMatch,
-										type: constant.form.messagebox.type.error
-									},{});
-									mb.Show({
-										effect: true,
-										callback: function(){
-											areaset.GetControl(inputs.mail).SetVisualError(true);
-											areaset.GetControl(inputs.password).SetVisualError(true);
+							wa_api.methods.Auth({
+								mail: areaset.GetControl(inputs.mail).GetValue(),
+								password: areaset.GetControl(inputs.password).GetValue(),
+								remember: remember,
+								callback: function(data){
+									//save login and password on fake form
+									/*if($("iframe[name=iframe-auth]").length == 0) $(cwe('iframe','name,iframe-auth',document.body)).hide();
+									 var fake_form = document.forms['form-spec-auth'];
+									 fake_form['wa_email'].value = areaset.GetControl(inputs.mail).GetValue();
+									 fake_form['wa_password'].value = areaset.GetControl(inputs.password).GetValue();
+									 $(fake_form["submit"]).click();
+									 $("iframe[name=iframe-auth]").load(function(){
+									 $("iframe[name=iframe-auth]").load(function(){
+									 $("iframe[name=iframe-auth]").remove();
+									 });
+									 });*/
+
+									wa_manager.data.user.token = data[wa_api.Constants.OperationItem.Token];
+									if(remember) wa_manager.utils.storage.Set(wa_manager.constants.cookie.token, wa_manager.data.user.token);
+									wa_manager.data.form.main.SetActiveForm({
+										form: function(){
+											return new wa_manager.form.Account({holder: wa_manager.data.form.main.GetContentHolder()},{visible: false});
 										}
 									});
 								},
-								SessionLimit: function(data){
-									var mb = new wa_manager.form.MessageBox({
-										title: language.form.messagebox.title.error,
-										text: language.form.auth.exception.SessionLimit,
-										type: constant.form.messagebox.type.error
-									},{});
-									mb.Show({
-										effect: true,
-										callback: function(){
-											areaset.GetControl(inputs.mail).SetError(false);
-											areaset.GetControl(inputs.password).SetError(false);
-										}
-									});
+								exception: {
+									NotMatch: function(data){
+										var mb = new wa_manager.form.MessageBox({
+											title: language.form.messagebox.title.error,
+											text: language.form.auth.exception.NotMatch,
+											type: constant.form.messagebox.type.error
+										},{});
+										mb.Show({
+											effect: true,
+											callback: function(){
+												areaset.GetControl(inputs.mail).SetVisualError(true);
+												areaset.GetControl(inputs.password).SetVisualError(true);
+											}
+										});
+									},
+									SessionLimit: function(data){
+										var mb = new wa_manager.form.MessageBox({
+											title: language.form.messagebox.title.error,
+											text: language.form.auth.exception.SessionLimit,
+											type: constant.form.messagebox.type.error
+										},{});
+										mb.Show({
+											effect: true,
+											callback: function(){
+												areaset.GetControl(inputs.mail).SetError(false);
+												areaset.GetControl(inputs.password).SetError(false);
+											}
+										});
+									}
 								}
-							}
-						});
+							});
+						};
 					},
 					type: wa_manager.constants.control.buttonBox.button.type.auth,
 					accessKey: {
@@ -8103,60 +8233,6 @@
 					};
 				});
 
-				//add to areaset wmr control
-				areaset.AddControl({
-					name: inputs.wmr,
-					text: language.wmr.text,
-					control: function(holder){
-						return new control.textline({
-							holder: holder,
-							tooltip: language.wmr.tooltip,
-							focus: false,
-							minLength: limits.Wmr.Length.Min,
-							maxLength: limits.Wmr.Length.Max,
-							regexp: regexp.wmr,
-							checkData: true,
-							type: wa_manager.constants.control.textline.type.text
-						},{visible: true});
-					}
-				});
-
-				//add to areaset icq control
-				areaset.AddControl({
-					name: inputs.icq,
-					text: language.icq.text,
-					control: function(holder){
-						return new control.textline({
-							holder: holder,
-							tooltip: language.icq.tooltip,
-							focus: false,
-							minLength: limits.Icq.Length.Min,
-							maxLength: limits.Icq.Length.Max,
-							regexp: regexp.icq,
-							checkData: true,
-							type: wa_manager.constants.control.textline.type.text
-						},{visible: true});
-					}
-				});
-
-				//add to areaset invite control
-				areaset.AddControl({
-					name: inputs.invite,
-					text: language.invite.text,
-					control: function(holder){
-						return new control.textline({
-							holder: holder,
-							tooltip: language.invite.tooltip,
-							focus: false,
-							minLength: limits.Invite.Length.Min,
-							maxLength: limits.Invite.Length.Max,
-							regexp: regexp.invite,
-							checkData: true,
-							type: wa_manager.constants.control.textline.type.text
-						},{visible: true});
-					}
-				});
-
 				var control_options = cwe('div','id,control_options', parent);
 					var options = cwe('div','class,option',control_options);
 					cwe('b','id,clear',control_options);
@@ -8239,54 +8315,6 @@
 							return;
 						};
 
-						if(areaset.GetControl(inputs.wmr).state.error){
-							var msgbox = new wa_manager.form.MessageBox({
-								title: language.form.messagebox.title.error,
-								text: language.form.reg.wmr.error,
-								type: constant.form.messagebox.type.error
-							},{});
-							msgbox.Show({
-								effect: true,
-								callback: function(){
-									areaset.GetControl(inputs.wmr).SetFocus(true);
-									areaset.GetControl(inputs.wmr).SetError(true);
-								}
-							});
-							return;
-						};
-
-						if(areaset.GetControl(inputs.icq).state.error){
-							var msgbox = new wa_manager.form.MessageBox({
-								title: language.form.messagebox.title.error,
-								text: language.form.reg.icq.error,
-								type: constant.form.messagebox.type.error
-							},{});
-							msgbox.Show({
-								effect: true,
-								callback: function(){
-									areaset.GetControl(inputs.icq).SetFocus(true);
-									areaset.GetControl(inputs.icq).SetError(true);
-								}
-							});
-							return;
-						};
-
-						if(areaset.GetControl(inputs.invite).state.error){
-							var msgbox = new wa_manager.form.MessageBox({
-								title: language.form.messagebox.title.error,
-								text: language.form.reg.invite.error,
-								type: constant.form.messagebox.type.error
-							},{});
-							msgbox.Show({
-								effect: true,
-								callback: function(){
-									areaset.GetControl(inputs.invite).SetFocus(true);
-									areaset.GetControl(inputs.invite).SetError(true);
-								}
-							});
-							return;
-						};
-
 						if(!aceptRules.state.check){
 							var msgbox = new wa_manager.form.MessageBox({
 								title: language.form.messagebox.title.error,
@@ -8303,17 +8331,11 @@
 						areaset.GetControl(inputs.mail).SetError(false);
 						areaset.GetControl(inputs.password).SetError(false);
 						areaset.GetControl(inputs.repeat_password).SetError(false);
-						areaset.GetControl(inputs.wmr).SetError(false);
-						areaset.GetControl(inputs.icq).SetError(false);
-						areaset.GetControl(inputs.invite).SetError(false);
 
 						if(!wa_manager.data.control.loader.state.work) wa_api.methods.Register({
 							login: areaset.GetControl(inputs.login).GetValue(),
 							mail: areaset.GetControl(inputs.mail).GetValue(),
 							password: areaset.GetControl(inputs.password).GetValue(),
-							wmr: areaset.GetControl(inputs.wmr).GetValue(),
-							icq: areaset.GetControl(inputs.icq).GetValue(),
-							invite: areaset.GetControl(inputs.invite).GetValue(),
 							callback: function(data){
 								var mb = new wa_manager.form.MessageBox({
 									title: language.form.messagebox.title.notification,
@@ -8562,7 +8584,7 @@
 						interval: true,
 						order: 1
 					},
-					//login, icq
+					//login, mail
 					{
 						controls: [
 							//login
@@ -8573,18 +8595,18 @@
 								show: true,
 								order: 1
 							},
-							//icq
+							//mail
 							{
-								nameObj: "icq",
+								nameObj: "mail",
 								right: false,
-								text: language.items.icq.text,
+								text: language.items.mail.text,
 								show: true,
 								order: 2,
 								iconBoxItems: {
 									edit: {
 										show: true,
 										order: 1,
-										tooltip: language.items.icq.buttons.edit.tooltip,
+										tooltip: language.items.mail.buttons.edit.tooltip,
 										onClick: function(){
 											alert("Функционал на данный момент не реализован");
 										}
@@ -8595,7 +8617,7 @@
 						show: true,
 						order: 2
 					},
-					//balance, mail
+					//balance, password
 					{
 						controls: [
 							//balance
@@ -8630,39 +8652,6 @@
 									}
 								}
 							},
-							//mail
-							{
-								nameObj: "mail",
-								right: false,
-								text: language.items.mail.text,
-								show: true,
-								order: 2,
-								iconBoxItems: {
-									edit: {
-										show: true,
-										order: 1,
-										tooltip: language.items.mail.buttons.edit.tooltip,
-										onClick: function(){
-											alert("Функционал на данный момент не реализован");
-										}
-									}
-								}
-							}
-						],
-						show: true,
-						order: 3
-					},
-					//wmr, password
-					{
-						controls: [
-							//wmr
-							{
-								nameObj: "wmr",
-								right: false,
-								text: language.items.wmr.text,
-								show: true,
-								order: 1
-							},
 							//password
 							{
 								nameObj: "password",
@@ -8683,17 +8672,26 @@
 							}
 						],
 						show: true,
-						order: 4
+						order: 3
 					},
-					//surfing key
+					//wmr, surfing key
 					{
 						controls: [
+							//wmr
+							{
+								nameObj: "wmr",
+								right: false,
+								text: language.items.wmr.text,
+								show: true,
+								order: 1
+							},
+							//surfing key
 							{
 								nameObj: "surfingKey",
-								right: true,
+								right: false,
 								text: language.items.surfingKey.text,
 								show: true,
-								order: 1,
+								order: 2,
 								iconBoxItems: {
 									copy: {
 										show: true,
@@ -8750,7 +8748,7 @@
 							}
 						],
 						show: true,
-						order: 5
+						order: 4
 					},
 					//readonly key
 					{
@@ -8819,7 +8817,7 @@
 						],
 						show: true,
 						interval: true,
-						order: 6
+						order: 5
 					},
 					//timebonus
 					{
@@ -8835,23 +8833,7 @@
 							}
 						],
 						show: true,
-						order: 7
-					},
-					//inactivity
-					{
-						controls: [
-							//inactivity
-							{
-								nameObj: "inactivity",
-								right: false,
-								colspanValue: 4,
-								text: language.items.inactivity.text,
-								show: true,
-								order: 1
-							}
-						],
-						show: true,
-						order: 8
+						order: 6
 					},
 					//account status
 					{
@@ -8884,76 +8866,7 @@
 							}
 						],
 						show: true,
-						order: 9
-					},
-					//vip
-					{
-						controls: [
-							//vip
-							{
-								nameObj: "vip",
-								right: false,
-								colspanValue: 4,
-								text: language.items.vip.text,
-								show: true,
-								order: 1,
-								iconBoxItems: {
-									vip: {
-										show: true,
-										order: 1,
-										tooltip: language.items.vip.buttons.vip.tooltip,
-										onClick: function(){
-											var needVipStatus = ((wa_manager.data.user.vip) ? false : true);
-
-											wa_api.methods.SetVip({
-												token: wa_manager.data.user.token,
-												vip: needVipStatus,
-												callback: function(data){
-													wa_manager.data.user.vip = needVipStatus;
-
-													SelfObj.ChangeTextAndValue({
-														vip: {
-															value: ((needVipStatus) ? language.items.vip.value.enabled : language.items.vip.value.disabled),
-															'class': ((needVipStatus) ? opts['class']['true'] : opts['class']['false'])
-														}
-													});
-												}
-											});
-										}
-									}
-								}
-							}
-						],
-						show: true,
-						order: 10
-					},
-					//invite
-					{
-						controls: [
-							//invite
-							{
-								nameObj: "invite",
-								right: false,
-								colspanValue: 4,
-								text: language.items.invite.text,
-								show: true,
-								order: 12,
-								iconBoxItems: {
-									copy: {
-										show: true,
-										clipboard: true,
-										order: 1,
-										tooltip: language.items.invite.buttons.copy.tooltip,
-										success: language.items.invite.buttons.copy.success,
-										onClick: function(icon){
-											icon.clipboard.setText(SelfObj.GetValue('invite'));
-										}
-									}
-								}
-							}
-						],
-						show: true,
-						order: 11
+						order: 7
 					}
 				]
 			});
@@ -8967,16 +8880,13 @@
 					//opts.items.invite.iconBoxItems.copy.show = false;
 				};
 
-
 				wa_api.methods.GetGeneralInfo({
 					token: wa_manager.data.user.token,
 					callback: function(data){
 						wa_manager.data.user.login = data[jsonItem.Login];
 						wa_manager.options.service.wmr = data[jsonItem.SystemWmr];
-						wa_manager.data.user.vip = data[jsonItem.Vip];
 
 						if(data[jsonItem.Deleted]) proto.Opts.items[8].controls[0].iconBoxItems.restore.show = true;
-						if(!data[jsonItem.Invite]) proto.Opts.items[10].controls[0].iconBoxItems.copy.show = false;
 
 						SelfObj.SetItems(opts.items);
 
@@ -8991,36 +8901,18 @@
 								value: wa_manager.language.other.informationHiden,
 								'class': opts['class'].readonly
 							},
-							icq: {
-								value: (data[jsonItem.Icq]) ? dataFormat.Icq(data[jsonItem.Icq]) : language.notAvailable
-							},
 							balance: {
 								value: (data[jsonItem.Balance] || data[jsonItem.Balance] == 0) ? dataFormat.Balance(data[jsonItem.Balance]) : language.notAvailable
-							},
-							inactivity: {
-								value: ((data[jsonItem.InActivity] == 0) ? dataFormat.Int(data[jsonItem.InActivity]) : "<span id='item_status' class='warning'>"+dataFormat.Int(data[jsonItem.InActivity])+"</span>"),
-								'class': ((data[jsonItem.InActivity] == 0) ? opts['class']['true'] : opts['class']['false'])
 							},
 							status: {
 								value: ((data[jsonItem.Deleted]) ? language.items.status.value.deleted : language.items.status.value.active),
 								'class': ((data[jsonItem.Deleted]) ? opts['class']['false'] : opts['class']['true'])
 							},
-							invite: {
-								value: ((data[jsonItem.Invite]) ? data[jsonItem.Invite] : language.items.invite.notAvailable),
-								'class': ((data[jsonItem.Invite]) ? opts['class']['true'] : opts['class'].readonly)
-							},
 							timebonus: {
 								value: (data[jsonItem.TimeBonus] || data[jsonItem.TimeBonus] != null) ? dataFormat.Int(data[jsonItem.TimeBonus]) : language.notAvailable
 							},
-							id: {
-								value: (data[jsonItem.Id]) ? dataFormat.Int(data[jsonItem.Id]) : language.notAvailable
-							},
 							wmr: {
 								value: (data[jsonItem.Wmr]) ? data[jsonItem.Wmr] : language.notAvailable
-							},
-							vip: {
-								value: ((data[jsonItem.Vip]) ? language.items.vip.value.enabled : language.items.vip.value.disabled),
-								'class': ((data[jsonItem.Vip]) ? opts['class']['true'] : opts['class']['false'])
 							},
 							surfingKey: {
 								value: language.notAvailable
@@ -11094,20 +10986,60 @@
 					var language = wa_manager.language,
 						constant = wa_manager.constants;
 
-					var msgbox_opt = {
+					var msgbox = new wa_manager.form.MessageBox({
 						title: language.form.messagebox.title.error,
 						text: language.generalError.NotActivated.text,
 						type: constant.form.messagebox.type.error,
-						onClickButton: {}
-					};
-					msgbox_opt.onClickButton[constant.control.buttonBox.button.name.ok] = function(mbox){
-						mbox.Destroy({
-							callback: function(){
-								alert("Функция активации аккаунта на данный момент недоступна.");
+						onClickButton: {
+							ok: function(mbox){
+								mbox.Destroy({
+									callback: function(){
+										var msg = new wa_manager.form.MessageBox({
+											type: constant.form.messagebox.type.confirmRegister,
+											confirmRegister: {
+												mail: (wa_manager.utils.storage.Get(wa_manager.constants.cookie.mail) != "") ? wa_manager.utils.storage.Get(wa_manager.constants.cookie.mail) : "",
+												success: function(data){
+													var _msgbox = new wa_manager.form.MessageBox({
+														title: wa_manager.language.form.messagebox.title.notification,
+														text: wa_manager.language.form.messagebox.type.confirmRegister.success,
+														type: wa_manager.constants.form.messagebox.type.info,
+														onClickButton: {
+															ok: function(mbox){
+																mbox.Destroy({
+																	callback: function(){
+																		wa_manager.data.form.main.SetActiveForm({
+																			form: function(){
+																				return new wa_manager.form.Auth({holder: wa_manager.data.form.main.GetContentHolder()},{visible: false});
+																			}
+																		});
+																	}
+																});
+															}
+														}
+													},{visible: false});
+													_msgbox.Show({effect: true});
+												}
+											},
+											onClickButton: {
+												cancel: function(mbox){
+													mbox.Destroy({
+														callback: function(){
+															wa_manager.data.form.main.SetActiveForm({
+																form: function(){
+																	return new wa_manager.form.Auth({holder: wa_manager.data.form.main.GetContentHolder()},{visible: false});
+																}
+															});
+														}
+													});
+												}
+											}
+										},{visible: false});
+										msg.Show({effect: true});
+									}
+								});
 							}
-						});
-					};
-					var msgbox = new wa_manager.form.MessageBox(msgbox_opt,{});
+						}
+					},{visible: false});
 					msgbox.Show({effect: true});
 				},
 				MailSystemError : function(resp_data){

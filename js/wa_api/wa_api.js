@@ -87,9 +87,6 @@
             data.AddData(wa_api.Constants.OperationItem.Login, obj.login);
             data.AddData(wa_api.Constants.OperationItem.Mail, obj.mail);
             data.AddData(wa_api.Constants.OperationItem.Password, obj.password);
-			data.AddData(wa_api.Constants.OperationItem.Wmr, obj.wmr);
-			data.AddData(wa_api.Constants.OperationItem.Icq, obj.icq);
-            data.AddData(wa_api.Constants.OperationItem.Invite, obj.invite);
             data.SendData(obj.callback, obj.exception);
         },
 		AddFolder: function(obj){
@@ -624,7 +621,23 @@
             data.AddData(wa_api.Constants.OperationItem.IdsTasks, obj.tasks);
 
             data.SendData(obj.callback, obj.exception);
-        }
+        },
+		ConfirmRegister: function(obj){
+			obj = $.extend(true, {
+				exception: {
+					WrongConfirmCode: function(){}
+				}
+			}, obj);
+
+			var data = new wa_api.utils.json();
+			data.SetOpcode(wa_api.Constants.OperationCode.Confirm.Register);
+			data.SetToken(obj.token);
+
+			data.AddData(wa_api.Constants.OperationItem.Mail, obj.mail);
+			data.AddData(wa_api.Constants.OperationItem.CodeConfirm, obj.code);
+
+			data.SendData(obj.callback, obj.exception, obj.ge_callback);
+		}
     };
 
     //UTILITES
@@ -859,6 +872,7 @@
 				invite:  /^.*$/,
 				icq: /^\d+$/,
 				wmr: /^R\d+$/,
+				codeConfirm: /^.*$/,
 				mask: {
 					rangeSize: /^\d+$/,
 					mask: /^.*$/,
@@ -1042,6 +1056,10 @@
 				Account: 'Reset account',
 				SurfingKey: 'Reset surfing key',
 				ReadonlyKey: 'Reset readonly key'
+			},
+
+			Confirm: {
+				Register: 'Confirm sign up'
 			}
         },
 
@@ -1117,7 +1135,8 @@
             BeforeClick: 'Before click',
             AfterClick: 'After click',
             Tasks: 'Tasks',
-			Incomplete: 'Incomplete'
+			Incomplete: 'Incomplete',
+			CodeConfirm: 'Confirm code'
         },
 
         ResponseStatus : {
@@ -1158,7 +1177,8 @@
             Forbidden: 'Forbidden',
 			IcqExists: 'ICQ UIN exists',
 			WmrExists: 'WMR exists',
-			IpRangeNotRegistered: 'IP range not registered'
+			IpRangeNotRegistered: 'IP range not registered',
+			WrongConfirmCode: 'Wrong confirm code'
         },
 
         AccountStatus : {
@@ -1319,7 +1339,16 @@
                         Default: 150
                     }
                 }
-            }
+            },
+
+			Confirm: {
+				Code: {
+					Length: {
+						Min: 1,
+						Max: 100
+					}
+				}
+			}
         }
     };
 
