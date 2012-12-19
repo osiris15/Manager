@@ -429,6 +429,15 @@ embed, embed:active {
     background-position: -384px -16px;
 }
 
+
+.iconbox .item.transfer {
+    background-position: -416px 0;
+}
+
+.iconbox .item.transfer:hover {
+    background-position: -416px -16px;
+}
+
 .iconbox .item:active {
     opacity: .8;
 }
