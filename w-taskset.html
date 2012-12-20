@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta name="robots" content="index, follow"/>
+    <meta name="keywords" content=""/>
+    <meta name="description" content=""/>
+    <link type="text/css" rel="stylesheet" href="css/main.css"/>
+</head>
+<body>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{TITLE}</title>
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="css/main.css" rel="stylesheet" type="text/css">
+    <script language="javascript" type="text/javascript" src="js/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.js"></script>
+</head>
+<body>
+<div id="popup_wrap" style="z-index: 101; opacity: 1; display: block; visibility: visible;">
+    <div id="popup_all">
+        <div id="popup_box">
+            <div id="popup" class="ui-draggable">
+                <div class="p_title">Редактирование задания<b id="box_close"
+                                                              style="visibility: visible; opacity: 1;"></b></div>
+                <div id="all_off" style="display: none;"></div>
+                <div class="all">
+                    <div class="content">
+                        <div id="text" style="visibility: hidden; opacity: 0; display: none;"></div>
+                        <ul id="areaset" style="visibility: visible; opacity: 1;">
+                            <li class="set" style="display: none;"></li>
+                            <li>
+                                <div class="tab-container" style="visibility: visible; opacity: 1;">
+                                    <div class="tab-menu"><span class="tablist active">Настройки 1</span><span
+                                            class="tablist">Настройки 2</span></div>
+                                    <div class="tab-content">
+                                        <div class="tab-box" style="">
+                                            <ul id="areaset" style="visibility: visible; opacity: 1;">
+                                                <li class="set">Имя задания</li>
+                                                <li><span class="textline"
+                                                          tooltip="Имя задания поможет вам не запутаться в большом списке заданий."
+                                                          style="visibility: visible; opacity: 1;"
+                                                          tooltip_state="false"><input type="text"
+                                                                                       maxlength="50"></span></li>
+                                                <li class="set">Домен</li>
+                                                <li><span class="textline"
+                                                          tooltip="Домен на котором будет выполняться текущее задание."
+                                                          style="visibility: visible; opacity: 1;"
+                                                          tooltip_state="false"><input type="text"
+                                                                                       maxlength="255"></span></li>
+                                                <li class="set">Внешний источник</li>
+                                                <li><span class="textline" tooltip="URL до файла внешнего источника"
+                                                          style="visibility: visible; opacity: 1;"><input type="text"
+                                                                                                          maxlength="500"></span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="tab-box" style="display: none;">
+                                            <ul id="areaset" style="visibility: visible; opacity: 1;">
+                                                <li class="set">Маска</li>
+                                                <li><span class="textline"
+                                                          tooltip="Строка по которой будет выполняться поиск эллемента страницы для клика."
+                                                          style="visibility: visible; opacity: 1;"><input type="text"
+                                                                                                          maxlength="50"></span>
+                                                </li>
+                                                <li class="set" style="display: none;"></li>
+                                                <li>
+                                                    <div class="filter"><span id="checkbox"
+                                                                              tooltip="Поставив здесь галочку, вы сможете получить больше трафика, но его качество может значительно ухудшиться."
+                                                                              style="visibility: visible; opacity: 1;"><b
+                                                            class="uncheck"></b></span><span>Игнорировать глобальную уникальность</span>
+                                                    </div>
+                                                </li>
+                                                <li class="set" style="display: none;"></li>
+                                                <li>
+                                                    <div class="filter"><span id="checkbox"
+                                                                              tooltip="Поставив здесь галочку, вы сможете получить больше трафика, но его качество может значительно ухудшиться."
+                                                                              style="visibility: visible; opacity: 1;"><b
+                                                            class="uncheck"></b></span><span>Разрешить прокси трафик</span>
+                                                    </div>
+                                                </li>
+                                                <li class="set">Время до и после клика</li>
+                                                <li>
+                                                    <div class="inblock" style="visibility: visible; opacity: 1;"><span
+                                                            class="textline float"
+                                                            tooltip="Время которое пройдет до выполнения клика. Число должно быть кратно 10."
+                                                            style="visibility: visible; opacity: 1;"><input type="text"></span><span
+                                                            id="rangebox"><b class="range top"></b><b
+                                                            class="range bottom"></b></span></div>
+                                                    <div class="inblock" style="visibility: visible; opacity: 1;"><span
+                                                            class="textline float"
+                                                            tooltip="Время которое пройдет после выполнения клика. Число должно быть кратно 10."
+                                                            style="visibility: visible; opacity: 1;"><input type="text"></span><span
+                                                            id="rangebox"><b class="range top"></b><b
+                                                            class="range bottom"></b></span></div>
+                                                </li>
+                                                <li class="set">Размер подсети разброса и время уникальности IP</li>
+                                                <li>
+                                                    <div class="inblock" style="visibility: visible; opacity: 1;"><span
+                                                            class="textline float"
+                                                            tooltip="Размер подсети разброса определяет размер диапазона, IP которого будут считаться соседями по подсети. Чем больше размер, тем более отдаленные друг от друга IP будут считаться произошедшими из одной подсети."
+                                                            style="visibility: visible; opacity: 1;"><input type="text"></span><span
+                                                            id="rangebox"><b class="range top"></b><b
+                                                            class="range bottom"></b></span></div>
+                                                    <div class="inblock" style="visibility: visible; opacity: 1;"><span
+                                                            class="textline float"
+                                                            tooltip="Время уникальности определяет время (в минутах), в течении которого один IP не может совершить по маске более одного перехода"
+                                                            style="visibility: visible; opacity: 1;"><input type="text"></span><span
+                                                            id="rangebox"><b class="range top"></b><b
+                                                            class="range bottom"></b></span></div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="set">
+                                Стоимость задания
+                            </li>
+                            <li><span class="textline">
+                                <input name="" type="text" value="100" readonly="readonly">
+                            </span>
+                            </li>
+                        </ul>
+
+                    </div>
+                    <div id="error_text" style="opacity: 0; display: none; visibility: hidden;"></div>
+                    <div class="footer">
+                        <div id="m_buttons" style="visibility: visible; opacity: 1;"><span class="bt"
+                                                                                           style="visibility: visible; display: inline; opacity: 1;">Сохранить</span><span
+                                class="bt gray" style="visibility: visible; display: inline; opacity: 1;">Отмена</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
