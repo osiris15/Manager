@@ -50,12 +50,16 @@
 					setClicktargeting: 'setClicktargeting',
                     setTimetargeting: 'setTimetargeting',
 					setTargetingCountry: 'setTargetingCountry',
+					setAccountPassword: 'setAccountPassword',
 					domainAdd: 'domainAdd',
 					setDomain: 'setDomain',
                     console: 'console',
                     addTask: 'addTask',
                     editTask: 'editTask',
-					confirmRegister: 'confirmRegister'
+					confirmRegister: 'confirmRegister',
+					confirmSetAccountPassword: 'confirmSetAccountPassword',
+					confirmSendCredits: 'confirmSendCredits',
+					sendCredits: 'sendCredits'
 				},
 				'class': {
 					info: null,
@@ -130,7 +134,8 @@
 						view: 'view',
 						click: 'click',
 						data: 'data',
-                        graphic: 'graphic'
+                        graphic: 'graphic',
+						transfer: 'transfer'
 					}
 				}
 			},
@@ -156,6 +161,15 @@
 				reg: "Reg",
 				auth: "Auth"
 			}
+		},
+		service: {
+			TaskSecondPrice: null,
+			TransferPercent:  null,
+			ExchangeRate: null,
+			AllowProxyFactor: null,
+			SystemWMR: null,
+			UniqueTimeFactor: null,
+			IPRangeFactor: null
 		}
 	};
 
@@ -165,8 +179,7 @@
 			name: "WaspAce Service",
 			manager: "WaspAce Manager",
 			url: "http://waspace.net",
-			rules: "/rules.html",
-			wmr: null
+			rules: "/rules.html"
 		},
 		cookie: {
 			expiriesday: 365,
@@ -594,6 +607,21 @@
 			str = str.substr(0, str.length-delimiter.length);
 
 			return str;
+		},
+		inObject: function(obj, value){
+			var exit = false,
+				output = null;
+
+			$.each(obj, function(key, val){
+				if(!exit){
+					if(val == value){
+						output = key;
+						exit = true;
+					};
+				};
+			});
+
+			return output;
 		}
 	};
 
@@ -2475,7 +2503,14 @@
                         onClick: function(){},
                         order: 17,
                         show: false
-                    }
+                    },
+					transfer: {
+						type: constant.items.type.transfer,
+						tooltip: language.items.transfer.tooltip,
+						onClick: function(){},
+						order: 18,
+						show: false
+					}
 				}
 			});
 
@@ -4843,7 +4878,11 @@
                 afterClick: 'afterClick',
 				slider: 'slider',
 				codeConfirm: "codeConfirm",
-				mail: "mail"
+				mail: "mail",
+				password: "password",
+				repeat_password: "repeat_password",
+				recipient: "recipient",
+				amount: "amount"
 			};
 			//options
 			var default_options = {
@@ -6259,6 +6298,130 @@
                             }
                         ]
                     },
+					setAccountPassword: {
+						buttons: {
+							ok: {
+								text: button_lang.send,
+								click: function(){
+									SelfObj.ErrorHide();
+
+									proto.Data.areaset.GetControl(inputs.password).CheckText();
+									proto.Data.areaset.GetControl(inputs.repeat_password).CheckText();
+									if(proto.Data.areaset.GetControl(inputs.password).state.error || proto.Data.areaset.GetControl(inputs.repeat_password).state.error){
+										SelfObj.ErrorShow(language.type.setAccountPassword.password_error);
+										return;
+									};
+
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											wa_api.methods.SetAccountPassword({
+												token: wa_manager.methods.GetToken(),
+												password: proto.Data.areaset.GetControl(inputs.password).GetValue(),
+												callback: function(){
+													SelfObj.Destroy({
+														callback: function(){
+															opts.setAccountPassword = $.extend(true, opts.setAccountPassword, {});
+
+															opts.setAccountPassword.success(opts.setAccountPassword);
+														}
+													});
+												},
+												ge_callback: function(){
+													SelfObj.Show({effect: true});
+												}
+											});
+										}
+									});
+								},
+								show: true
+							},
+							cancel: {
+								text: button_lang.cancel,
+								click: function(){
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											if(opts.onClickButton[button_constant.button.name.ok]) opts.onClickButton[button_constant.button.name.cancel](SelfObj);
+											else SelfObj.Destroy();
+										}
+									});
+								},
+								show: true
+							}
+						},
+						controls: [
+							{
+								name: inputs.password,
+								text: language.type.setAccountPassword.password.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										type: wa_manager.constants.control.textline.type.password,
+										focus: true,
+										value: "",
+										tooltip:  language.type.setAccountPassword.password.tooltip,
+										minLength: limits.Account.Password.Length.Min,
+										maxLength:  limits.Account.Password.Length.Max,
+										regexp: regexp.password,
+										checkData: true
+									},{visible: true});
+								}
+							},
+							{
+								name: inputs.repeat_password,
+								text: language.type.setAccountPassword.repeat_password.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										type: wa_manager.constants.control.textline.type.password,
+										focus: false,
+										value: "",
+										tooltip:  language.type.setAccountPassword.repeat_password.tooltip,
+										minLength: limits.Account.Password.Length.Min,
+										maxLength:  limits.Account.Password.Length.Max,
+										regexp: regexp.password,
+										checkData: true
+									},{visible: true});
+								}
+							}
+						],
+						events: [
+							function(msgbox){
+								function synchronize_password_passwordrepeat(password_value, passwordrepeat_value){
+									if(password_value == passwordrepeat_value) return false;
+									else return true;
+								};
+
+								msgbox.areaset.GetControl(inputs.password).SetUserCheckDataError(function(control, opts){
+									var password_control = msgbox.areaset.GetControl(inputs.password),
+										repeatpassword_control = msgbox.areaset.GetControl(inputs.repeat_password);
+
+									var state_error = synchronize_password_passwordrepeat(password_control.GetValue(), repeatpassword_control.GetValue());
+
+									return {
+										state: state_error,
+										callback: function(){
+											repeatpassword_control.SetError(password_control.state.error);
+										}
+									};
+								});
+								msgbox.areaset.GetControl(inputs.repeat_password).SetUserCheckDataError(function(control, opts){
+									var password_control = msgbox.areaset.GetControl(inputs.password),
+										repeatpassword_control = msgbox.areaset.GetControl(inputs.repeat_password);
+
+									var state_error = synchronize_password_passwordrepeat(password_control.GetValue(), repeatpassword_control.GetValue());
+
+									return {
+										state: state_error,
+										callback: function(){
+											password_control.SetError(repeatpassword_control.state.error);
+										}
+									};
+								});
+							}
+						]
+					},
 					domainAdd: {
 						buttons: {
 							ok: {
@@ -7409,7 +7572,7 @@
 													SelfObj.Show({effect: true});
 												},
 												exception: {
-													WrongConfirmCode: function(data){
+													InvalidCode: function(data){
 														var msgbox = new wa_manager.form.MessageBox({
 															title: wa_manager.language.form.messagebox.title.error,
 															text: language.type.confirmRegister.exception.WrongConfirmCode.text,
@@ -7481,6 +7644,357 @@
 								}
 							}
 						]
+					},
+					confirmSetAccountPassword: {
+						buttons: {
+							ok: {
+								text: button_lang.confirm,
+								click: function(){
+									SelfObj.ErrorHide();
+
+									proto.Data.areaset.GetControl(inputs.codeConfirm).CheckText();
+									if(proto.Data.areaset.GetControl(inputs.codeConfirm).state.error){
+										SelfObj.ErrorShow(language.type.confirmSetAccountPassword.codeConfirm.error);
+										return;
+									};
+
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											wa_api.methods.ConfirmSetAccountPassword({
+												token: wa_manager.methods.GetToken(),
+												code: proto.Data.areaset.GetControl(inputs.codeConfirm).GetValue(),
+												callback: function(){
+													SelfObj.Destroy({
+														callback: function(){
+															opts.confirmSetAccountPassword = $.extend(true, opts.confirmSetAccountPassword, {
+																codeConfirm: proto.Data.areaset.GetControl(inputs.codeConfirm).GetValue()
+															});
+
+															opts.confirmSetAccountPassword.success(opts.confirmSetAccountPassword);
+														}
+													});
+												},
+												ge_callback: function(){
+													SelfObj.Show({effect: true});
+												},
+												exception: {
+													InvalidCode: function(data){
+														var msgbox = new wa_manager.form.MessageBox({
+															title: wa_manager.language.form.messagebox.title.error,
+															text: language.type.confirmSetAccountPassword.exception.InvalidCode.text,
+															type: wa_manager.constants.form.messagebox.type.error,
+															onClickButton: {
+																ok: function(mbox){
+																	mbox.Destroy({
+																		callback: function(){
+																			SelfObj.Show({effect: true});
+																		}
+																	});
+																}
+															}
+														},{});
+														msgbox.Show({effect: true});
+													}
+												}
+											});
+										}
+									});
+								},
+								show: true
+							},
+							cancel: {
+								text: button_lang.cancel,
+								click: function(){
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											if(opts.onClickButton[button_constant.button.name.ok]) opts.onClickButton[button_constant.button.name.cancel](SelfObj);
+											else SelfObj.Destroy();
+										}
+									});
+								},
+								show: true
+							}
+						},
+						controls: [
+							{
+								name: inputs.codeConfirm,
+								text: language.type.confirmSetAccountPassword.codeConfirm.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										focus: true,
+										value: opts.confirmSetAccountPassword.codeConfirm,
+										tooltip:  language.type.confirmSetAccountPassword.codeConfirm.tooltip,
+										minLength: limits.Confirm.Code.Length.Min,
+										maxLength:  limits.Confirm.Code.Length.Max,
+										regexp: regexp.codeConfirm,
+										checkData: true
+									},{visible: true});
+								}
+							}
+						]
+					},
+					confirmSendCredits: {
+						buttons: {
+							ok: {
+								text: button_lang.confirm,
+								click: function(){
+									SelfObj.ErrorHide();
+
+									proto.Data.areaset.GetControl(inputs.codeConfirm).CheckText();
+									if(proto.Data.areaset.GetControl(inputs.codeConfirm).state.error){
+										SelfObj.ErrorShow(language.type.confirmSendCredits.codeConfirm.error);
+										return;
+									};
+
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											wa_api.methods.ConfirmSendCredits({
+												token: wa_manager.methods.GetToken(),
+												code: proto.Data.areaset.GetControl(inputs.codeConfirm).GetValue(),
+												callback: function(){
+													SelfObj.Destroy({
+														callback: function(){
+															opts.confirmSendCredits = $.extend(true, opts.confirmSendCredits, {
+																codeConfirm: proto.Data.areaset.GetControl(inputs.codeConfirm).GetValue()
+															});
+
+															opts.confirmSendCredits.success(opts.confirmSendCredits);
+														}
+													});
+												},
+												ge_callback: function(){
+													SelfObj.Show({effect: true});
+												},
+												exception: {
+													InvalidCode: function(data){
+														var msgbox = new wa_manager.form.MessageBox({
+															title: wa_manager.language.form.messagebox.title.error,
+															text: language.type.confirmSendCredits.exception.InvalidCode.text,
+															type: wa_manager.constants.form.messagebox.type.error,
+															onClickButton: {
+																ok: function(mbox){
+																	mbox.Destroy({
+																		callback: function(){
+																			SelfObj.Show({effect: true});
+																		}
+																	});
+																}
+															}
+														},{});
+														msgbox.Show({effect: true});
+													},
+													LowBalance: function(data){
+														var msgbox = new wa_manager.form.MessageBox({
+															title: wa_manager.language.form.messagebox.title.error,
+															text: language.type.confirmSendCredits.exception.LowBalance.text,
+															type: wa_manager.constants.form.messagebox.type.error,
+															onClickButton: {
+																ok: function(mbox){
+																	mbox.Destroy({
+																		callback: function(){
+																			SelfObj.Show({effect: true});
+																		}
+																	});
+																}
+															}
+														},{});
+														msgbox.Show({effect: true});
+													},
+													InvalidRecipient: function(){
+														var msgbox = new wa_manager.form.MessageBox({
+															title: wa_manager.language.form.messagebox.title.error,
+															text: language.type.confirmSendCredits.exception.InvalidRecipient.text,
+															type: wa_manager.constants.form.messagebox.type.error,
+															onClickButton: {
+																ok: function(mbox){
+																	mbox.Destroy({
+																		callback: function(){
+																			SelfObj.Show({effect: true});
+																		}
+																	});
+																}
+															}
+														},{});
+														msgbox.Show({effect: true});
+													}
+												}
+											});
+										}
+									});
+								},
+								show: true
+							},
+							cancel: {
+								text: button_lang.cancel,
+								click: function(){
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											if(opts.onClickButton[button_constant.button.name.ok]) opts.onClickButton[button_constant.button.name.cancel](SelfObj);
+											else SelfObj.Destroy();
+										}
+									});
+								},
+								show: true
+							}
+						},
+						controls: [
+							{
+								name: inputs.codeConfirm,
+								text: language.type.confirmSendCredits.codeConfirm.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										focus: true,
+										value: opts.confirmSendCredits.codeConfirm,
+										tooltip:  language.type.confirmSendCredits.codeConfirm.tooltip,
+										minLength: limits.Confirm.Code.Length.Min,
+										maxLength:  limits.Confirm.Code.Length.Max,
+										regexp: regexp.codeConfirm,
+										checkData: true
+									},{visible: true});
+								}
+							}
+						]
+					},
+					sendCredits: {
+						buttons: {
+							ok: {
+								text: button_lang.send,
+								click: function(){
+									SelfObj.ErrorHide();
+
+									proto.Data.areaset.GetControl(inputs.recipient).CheckText();
+									if(proto.Data.areaset.GetControl(inputs.recipient).state.error){
+										SelfObj.ErrorShow(language.type.sendCredits.recipient.error);
+										proto.Data.areaset.GetControl(inputs.recipient).SetFocus(true);
+										return;
+									};
+
+									proto.Data.areaset.GetControl(inputs.amount).CheckText();
+									if(proto.Data.areaset.GetControl(inputs.amount).state.error){
+										SelfObj.ErrorShow(language.type.sendCredits.amount.error);
+										proto.Data.areaset.GetControl(inputs.amount).SetFocus(true);
+										return;
+									};
+
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											wa_api.methods.SendCredits({
+												token: wa_manager.methods.GetToken(),
+												amount: proto.Data.areaset.GetControl(inputs.amount).GetValue(),
+												recipient: proto.Data.areaset.GetControl(inputs.recipient).GetValue(),
+												callback: function(){
+													SelfObj.Destroy({
+														callback: function(){
+															opts.sendCredits = $.extend(true, opts.sendCredits, {
+																amount: proto.Data.areaset.GetControl(inputs.amount).GetValue(),
+																recipient: proto.Data.areaset.GetControl(inputs.recipient).GetValue()
+															});
+
+															opts.sendCredits.success(opts.sendCredits);
+														}
+													});
+												},
+												ge_callback: function(){
+													SelfObj.Show({effect: true});
+												},
+												exception: {
+													LowBalance: function(data){
+														var msgbox = new wa_manager.form.MessageBox({
+															title: wa_manager.language.form.messagebox.title.error,
+															text: language.type.sendCredits.exception.LowBalance.text,
+															type: wa_manager.constants.form.messagebox.type.error,
+															onClickButton: {
+																ok: function(mbox){
+																	mbox.Destroy({
+																		callback: function(){
+																			SelfObj.Show({effect: true});
+																		}
+																	});
+																}
+															}
+														},{});
+														msgbox.Show({effect: true});
+													},
+													InvalidRecipient: function(){
+														var msgbox = new wa_manager.form.MessageBox({
+															title: wa_manager.language.form.messagebox.title.error,
+															text: language.type.sendCredits.exception.InvalidRecipient.text,
+															type: wa_manager.constants.form.messagebox.type.error,
+															onClickButton: {
+																ok: function(mbox){
+																	mbox.Destroy({
+																		callback: function(){
+																			SelfObj.Show({effect: true});
+																		}
+																	});
+																}
+															}
+														},{});
+														msgbox.Show({effect: true});
+													}
+												}
+											});
+										}
+									});
+								},
+								show: true
+							},
+							cancel: {
+								text: button_lang.cancel,
+								click: function(){
+									SelfObj.Hide({
+										effect: true,
+										callback: function(){
+											if(opts.onClickButton[button_constant.button.name.ok]) opts.onClickButton[button_constant.button.name.cancel](SelfObj);
+											else SelfObj.Destroy();
+										}
+									});
+								},
+								show: true
+							}
+						},
+						controls: [
+							{
+								name: inputs.recipient,
+								text: language.type.sendCredits.recipient.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										focus: true,
+										value: opts.sendCredits.recipient,
+										tooltip:  language.type.sendCredits.recipient.tooltip,
+										minLength: limits.Account.Mail.Length.Min,
+										maxLength:  limits.Account.Mail.Length.Max,
+										regexp: regexp.mail,
+										checkData: true
+									},{visible: true});
+								}
+							},
+							{
+								name: inputs.amount,
+								text: language.type.sendCredits.amount.text,
+								control: function(holder){
+									return new control.numericUpDown({
+										holder: holder,
+										focus: false,
+										value: 10000,
+										tooltip:  language.type.sendCredits.amount.tooltip,
+										min: 10000,
+										max: 999999999,
+										minLength: 1,
+										step: 1000,
+										checkData: true
+									},{visible: true});
+								}
+							}
+						]
 					}
 				},
 				onClickButton: {},
@@ -7524,6 +8038,15 @@
 					folderName: null,
 					success: function(param){}
 				},
+				setDomain: {
+					title: language.type.setDomain.title,
+					text: language.type.setDomain.text,
+					folderId: 0,
+					domainId: 0,
+					domain: null,
+					extSource: null,
+					success: function(data){}
+				},
 				setGeotargeting: {
 					title: language.type.setGeoTargeting.title,
 					text: language.type.setGeoTargeting.text,
@@ -7558,19 +8081,22 @@
 					},
 					success: function(param){}
 				},
+				setTargetingCountry: {
+					title: language.type.setTargetingCountry.title,
+					text: language.type.setTargetingCountry.text,
+					nameFull: "",
+					value: 0,
+					success: function(value){}
+				},
+				setAccountPassword: {
+					title: language.type.setAccountPassword.title,
+					text: language.type.setAccountPassword.text,
+					success: function(data){}
+				},
 				domainAdd: {
 					title: language.type.domainAdd.title,
 					text: language.type.domainAdd.text,
 					folderId: null,
-					success: function(data){}
-				},
-				setDomain: {
-					title: language.type.setDomain.title,
-					text: language.type.setDomain.text,
-					folderId: 0,
-					domainId: 0,
-					domain: null,
-					extSource: null,
 					success: function(data){}
 				},
                 console: {
@@ -7611,19 +8137,31 @@
                     afterClick: 0,
                     success: function(data){}
                 },
-				setTargetingCountry: {
-					title: language.type.setTargetingCountry.title,
-					text: language.type.setTargetingCountry.text,
-					nameFull: "",
-					value: 0,
-					success: function(value){}
-				},
 				confirmRegister: {
 					title: language.type.confirmRegister.title,
 					text: language.type.confirmRegister.text,
 					mail: "",
 					codeConfirm: "",
 					success: function(value){}
+				},
+				confirmSetAccountPassword: {
+					title: language.type.confirmSetAccountPassword.title,
+					text: language.type.confirmSetAccountPassword.text,
+					codeConfirm: "",
+					success: function(data){}
+				},
+				confirmSendCredits: {
+					title: language.type.confirmSendCredits.title,
+					text: language.type.confirmSendCredits.text,
+					codeConfirm: "",
+					success: function(data){}
+				},
+				sendCredits: {
+					title: language.type.sendCredits.title,
+					text: language.type.sendCredits.text,
+					recipient: "",
+					amount: 0,
+					success: function(data){}
 				}
 			};
 
@@ -7689,7 +8227,7 @@
 						},{visible: true});
 						if(!textInfo_text) textInfo.Hide();
 				//area set
-				var areaset = proto.Data.areaset = new control.areaset({holder: content},{visible: true});
+				var areaset = SelfObj.areaset = proto.Data.areaset = new control.areaset({holder: content},{visible: true});
 
 				//sets controls to areaset
 				$.each(opts.setControl[opts.type].controls, function(key, value){
@@ -7718,7 +8256,7 @@
 
 				//sets events
 				$.each(opts.setControl[opts.type].events, function(key, event){
-					event();
+					event(SelfObj);
 				});
 
 				//text error
@@ -7780,6 +8318,7 @@
 			this.state = {};
 			this.htmlElement = null;
 			this.buttonBox = null;
+			this.areaset = null;
 
 			//METHODS
 			this.ErrorShow = function(text){
@@ -8680,7 +9219,7 @@
 								order: 2,
 								iconBoxItems: {
 									edit: {
-										show: true,
+										show: false,
 										order: 1,
 										tooltip: language.items.mail.buttons.edit.tooltip,
 										onClick: function(){
@@ -8716,7 +9255,7 @@
 												onClickButton: {
 													ok: function(){
 														msgbox.Destroy();
-														var w = window.open('wmk:payto?Purse='+wa_manager.options.service.wmr+'&Amount=5000&Desc='+wa_manager.data.user.login+'&BringToFront=Y');
+														var w = window.open('wmk:payto?Purse='+wa_manager.constants.service.SystemWMR+'&Amount=5000&Desc='+wa_manager.data.user.login+'&BringToFront=Y');
 														$(w).ready(function(e){
 															if(!w.closed) w.close();
 														});
@@ -8724,6 +9263,56 @@
 												}
 											},{});
 											msgbox.Show({effect: true});
+										}
+									},
+									transfer: {
+										show: true,
+										order: 2,
+										tooltip: language.items.balance.buttons.transfer.tooltip,
+										onClick: function(){
+											var MsgBox = new wa_manager.form.MessageBox({
+												type: wa_manager.constants.form.messagebox.type.sendCredits,
+												sendCredits: {
+													success: function(data){
+														var msg = new wa_manager.form.MessageBox({
+															type: wa_manager.constants.form.messagebox.type.info,
+															title: wa_manager.language.form.messagebox.title.notification,
+															text: wa_manager.language.form.messagebox.type.sendCredits.success,
+															onClickButton: {
+																ok: function(mbox){
+																	mbox.Destroy({
+																		callback: function(){
+																			var msgbox = new wa_manager.form.MessageBox({
+																				type: wa_manager.constants.form.messagebox.type.confirmSendCredits,
+																				confirmSendCredits: {
+																					success: function(){
+																						var _msg = new wa_manager.form.MessageBox({
+																							type: wa_manager.constants.form.messagebox.type.info,
+																							title: wa_manager.language.form.messagebox.title.notification,
+																							text: wa_manager.language.form.messagebox.type.confirmSendCredits.success
+																						},{visible: false});
+																						_msg.Show({effect: true});
+
+																						//check balance
+																						SelfObj.ChangeTextAndValue({
+																							balance: {
+																								value: dataFormat.Balance(parseInt(wa_manager.data.form.main.activeForm.items.balance.GetValue().replace(/ /g,"")) - parseInt(data.amount))
+																							}
+																						});
+																					}
+																				}
+																			},{visible: false});
+																			msgbox.Show({effect: true});
+																		}
+																	});
+																}
+															}
+														},{visible: false});
+														msg.Show({effect: true});
+													}
+												}
+											},{visible: false});
+											MsgBox.Show({effect: true});
 										}
 									}
 								}
@@ -8741,7 +9330,42 @@
 										order: 1,
 										tooltip: language.items.password.buttons.edit.tooltip,
 										onClick: function(){
-											alert("Функционал на данный момент не реализован");
+											var MsgBox = new wa_manager.form.MessageBox({
+												type: wa_manager.constants.form.messagebox.type.setAccountPassword,
+												setAccountPassword: {
+													success: function(data){
+														var msg = new wa_manager.form.MessageBox({
+															type: wa_manager.constants.form.messagebox.type.info,
+															title: wa_manager.language.form.messagebox.title.notification,
+															text: wa_manager.language.form.messagebox.type.setAccountPassword.success,
+															onClickButton: {
+																ok: function(mbox){
+																	mbox.Destroy({
+																		callback: function(){
+																			var msgbox = new wa_manager.form.MessageBox({
+																				type: wa_manager.constants.form.messagebox.type.confirmSetAccountPassword,
+																				confirmSetAccountPassword: {
+																					success: function(data){
+																						var _msg = new wa_manager.form.MessageBox({
+																							type: wa_manager.constants.form.messagebox.type.info,
+																							title: wa_manager.language.form.messagebox.title.notification,
+																							text: wa_manager.language.form.messagebox.type.confirmSetAccountPassword.success
+																						},{visible: false});
+																						_msg.Show({effect: true});
+																					}
+																				}
+																			},{visible: false});
+																			msgbox.Show({effect: true});
+																		}
+																	});
+																}
+															}
+														},{visible: false});
+														msg.Show({effect: true});
+													}
+												}
+											},{visible: false});
+											MsgBox.Show({effect: true});
 										}
 									}
 								}
@@ -8750,24 +9374,16 @@
 						show: true,
 						order: 3
 					},
-					//wmr, surfing key
+					//surfing key
 					{
 						controls: [
-							//wmr
-							{
-								nameObj: "wmr",
-								right: false,
-								text: language.items.wmr.text,
-								show: true,
-								order: 1
-							},
 							//surfing key
 							{
 								nameObj: "surfingKey",
-								right: false,
+								right: true,
 								text: language.items.surfingKey.text,
 								show: true,
-								order: 2,
+								order: 1,
 								iconBoxItems: {
 									copy: {
 										show: true,
@@ -8948,6 +9564,21 @@
 			});
 
 			proto.Constructor = function(){
+				//get system const
+				wa_api.methods.GetSystemConstants({
+					token: wa_manager.methods.GetToken(),
+					callback: function(data){
+						wa_manager.constants.service.AllowProxyFactor = data[jsonItem.AllowProxyFactor];
+						wa_manager.constants.service.ExchangeRate = data[jsonItem.ExchangeRate];
+						wa_manager.constants.service.IPRangeFactor = data[jsonItem.IPRangeFactor];
+
+						$.each(data, function(key, val){
+							var keyName = wa_manager.utils.inObject(wa_api.Constants.OperationItem, key);
+							if(keyName != null) wa_manager.constants.service[keyName] = val;
+						});
+					}
+				});
+
 				var parent = proto.HtmlNodes.Main[0] = SelfObj.htmlElement = cwe('table','id,accountinfo',opts.holder);
 
 				//disable iconboxes for mobile browsers
@@ -8986,9 +9617,6 @@
 							},
 							timebonus: {
 								value: (data[jsonItem.TimeBonus] || data[jsonItem.TimeBonus] != null) ? dataFormat.Int(data[jsonItem.TimeBonus]) : language.notAvailable
-							},
-							wmr: {
-								value: (data[jsonItem.Wmr]) ? data[jsonItem.Wmr] : language.notAvailable
 							},
 							surfingKey: {
 								value: (data[jsonItem.SurfingKey]) ? data[jsonItem.SurfingKey] : language.notAvailable

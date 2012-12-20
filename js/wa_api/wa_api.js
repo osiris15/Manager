@@ -376,6 +376,17 @@
 
             data.SendData(obj.callback, obj.exception);
         },
+		GetSystemConstants: function(obj){
+			obj = $.extend(true, {
+				exception: {}
+			}, obj);
+
+			var data = new wa_api.utils.json();
+			data.SetOpcode(wa_api.Constants.OperationCode.Get.SystemConstants);
+			data.SetToken(obj.token);
+
+			data.SendData(obj.callback, obj.exception);
+		},
 		SetVip: function(obj){
 			obj = $.extend(true, {
 				exception: {}
@@ -544,6 +555,19 @@
 
 			data.SendData(obj.callback, obj.exception, obj.ge_callback);
 		},
+		SetAccountPassword: function(obj){
+			obj = $.extend(true, {
+				exception: {}
+			}, obj);
+
+			var data = new wa_api.utils.json();
+			data.SetOpcode(wa_api.Constants.OperationCode.Set.Password);
+			data.SetToken(obj.token);
+
+			data.AddData(wa_api.Constants.OperationItem.Password, obj.password);
+
+			data.SendData(obj.callback, obj.exception, obj.ge_callback);
+		},
         SetTask: function(obj){
             obj = $.extend(true, {
                 exception: {}
@@ -625,7 +649,7 @@
 		ConfirmRegister: function(obj){
 			obj = $.extend(true, {
 				exception: {
-					WrongConfirmCode: function(){}
+					InvalidCode: function(){}
 				}
 			}, obj);
 
@@ -635,6 +659,55 @@
 
 			data.AddData(wa_api.Constants.OperationItem.Mail, obj.mail);
 			data.AddData(wa_api.Constants.OperationItem.CodeConfirm, obj.code);
+
+			data.SendData(obj.callback, obj.exception, obj.ge_callback);
+		},
+		ConfirmSetAccountPassword: function(obj){
+			obj = $.extend(true, {
+				exception: {
+					InvalidCode: function(){}
+				}
+			}, obj);
+
+			var data = new wa_api.utils.json();
+			data.SetOpcode(wa_api.Constants.OperationCode.Confirm.SetAccountPassword);
+			data.SetToken(obj.token);
+
+			data.AddData(wa_api.Constants.OperationItem.CodeConfirm, obj.code);
+
+			data.SendData(obj.callback, obj.exception, obj.ge_callback);
+		},
+		ConfirmSendCredits: function(obj){
+			obj = $.extend(true, {
+				exception: {
+					InvalidCode: function(){},
+					LowBalance: function(){},
+					InvalidRecipient: function(){}
+				}
+			}, obj);
+
+			var data = new wa_api.utils.json();
+			data.SetOpcode(wa_api.Constants.OperationCode.Confirm.SendCredits);
+			data.SetToken(obj.token);
+
+			data.AddData(wa_api.Constants.OperationItem.CodeConfirm, obj.code);
+
+			data.SendData(obj.callback, obj.exception, obj.ge_callback);
+		},
+		SendCredits: function(obj){
+			obj = $.extend(true, {
+				exception: {
+					LowBalance: function(){},
+					InvalidRecipient: function(){}
+				}
+			}, obj);
+
+			var data = new wa_api.utils.json();
+			data.SetOpcode(wa_api.Constants.OperationCode.Send.Credits);
+			data.SetToken(obj.token);
+
+			data.AddData(wa_api.Constants.OperationItem.Amount, obj.amount);
+			data.AddData(wa_api.Constants.OperationItem.Recipient, obj.recipient);
 
 			data.SendData(obj.callback, obj.exception, obj.ge_callback);
 		}
@@ -1002,7 +1075,8 @@
 				ClickTargeting: 'Get clicks targeting',
                 TimeTargeting: 'Get time targeting',
 				Domains: 'Get domains',
-                Tasks: 'Get tasks'
+                Tasks: 'Get tasks',
+				SystemConstants: 'Get system constants'
             },
 
             Set : {
@@ -1016,7 +1090,8 @@
 				ClickTargeting: 'Set clicks targeting',
                 TimeTargeting: 'Set time targeting',
 				Domain: 'Set domain',
-                Task: 'Set task'
+                Task: 'Set task',
+				Password: 'Set password'
             },
 
             Add : {
@@ -1059,12 +1134,19 @@
 			},
 
 			Confirm: {
-				Register: 'Confirm sign up'
+				Register: 'Confirm sign up',
+				SetAccountPassword: 'Confirm set password',
+				SendCredits: 'Confirm send credits'
+			},
+
+			Send: {
+				Credits: "Send credits"
 			}
         },
 
         OperationItem : {
             Action : 'Action',
+			Amount: 'Amount',
             Status : 'Status',
             Error : 'Error',
             Data : 'Data',
@@ -1096,7 +1178,6 @@
 			Wmr: 'WMR',
 			InActivity: 'Inactivity',
 			Balance: 'Balance',
-			SystemWmr: 'SystemWMR',
 			Deleted: 'Deleted',
 			TimeBonus: 'Timebonus',
 			Vip: 'VIP',
@@ -1136,7 +1217,15 @@
             AfterClick: 'After click',
             Tasks: 'Tasks',
 			Incomplete: 'Incomplete',
-			CodeConfirm: 'Confirm code'
+			CodeConfirm: 'Confirm code',
+			TaskSecondPrice: 'Task second price',
+			TransferPercent:  'Transfer percent',
+			ExchangeRate: 'Exchange rate',
+			AllowProxyFactor: 'Allow proxy factor',
+			SystemWMR: 'System WMR',
+			UniqueTimeFactor: 'Unique time factor',
+			IPRangeFactor: 'IP range factor',
+			Recipient: 'Recipient'
         },
 
         ResponseStatus : {
@@ -1178,7 +1267,10 @@
 			IcqExists: 'ICQ UIN exists',
 			WmrExists: 'WMR exists',
 			IpRangeNotRegistered: 'IP range not registered',
-			WrongConfirmCode: 'Wrong confirm code'
+			WrongConfirmCode: 'Wrong confirm code',
+			InvalidCode: 'Invalid code',
+			LowBalance: 'Low balance',
+			InvalidRecipient: 'Invalid recipient'
         },
 
         AccountStatus : {
