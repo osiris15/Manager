@@ -1422,14 +1422,14 @@
                 BeforeClick: {
                     Value: {
                         Min: 10,
-                        Max: 600,
+                        Max: 900,
                         Default: 250
                     }
                 },
                 AfterClick: {
                     Value: {
                         Min: 0,
-                        Max: 600,
+                        Max: 900,
                         Default: 150
                     }
                 }
