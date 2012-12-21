@@ -1210,6 +1210,7 @@
             IdsTasks: 'Task IDs',
 			IdTime: 'Time ID',
             IdTask: 'Task ID',
+			IdOperation: 'Operation ID',
 			Recd: 'Recd',
 			Min: 'Min',
 			Max: 'Max',
@@ -1218,14 +1219,15 @@
             Tasks: 'Tasks',
 			Incomplete: 'Incomplete',
 			CodeConfirm: 'Confirm code',
-			TaskSecondPrice: 'Task second price',
+			TaskSecondCost: 'Task second cost',
 			TransferPercent:  'Transfer percent',
 			ExchangeRate: 'Exchange rate',
-			AllowProxyFactor: 'Allow proxy factor',
+			ProxyFactor: 'Proxy factor',
 			SystemWMR: 'System WMR',
 			UniqueTimeFactor: 'Unique time factor',
 			IPRangeFactor: 'IP range factor',
-			Recipient: 'Recipient'
+			Recipient: 'Recipient',
+			TransferAmount: 'Transfer amount'
         },
 
         ResponseStatus : {

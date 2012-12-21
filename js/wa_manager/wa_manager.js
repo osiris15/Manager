@@ -162,15 +162,7 @@
 				auth: "Auth"
 			}
 		},
-		service: {
-			TaskSecondPrice: null,
-			TransferPercent:  null,
-			ExchangeRate: null,
-			AllowProxyFactor: null,
-			SystemWMR: null,
-			UniqueTimeFactor: null,
-			IPRangeFactor: null
-		}
+		service: {}
 	};
 
 	//OPTIONS
@@ -2752,7 +2744,8 @@
 				minLength: 0,
 				maxLength: 0,
 				focus: false,
-				tooltip: null
+				tooltip: null,
+				onChange: function(upDown){}
 			});
 
 			proto.Constructor = function(){
@@ -2774,12 +2767,16 @@
 						if(value < proto.Opts.min || value > proto.Opts.max) return {state: true, callback: function(){}};
 						else return {state: false, callback: function(){}};
 					},
-					tooltip: proto.Opts.tooltip
+					tooltip: proto.Opts.tooltip,
+					onChange: function(textline){
+						opts.onChange(SelfObj);
+					}
 				},{visible: true});
 				SelfObj.CheckText = proto.Data.textline.CheckText;
                 SelfObj.SetFocus = proto.Data.textline.SetFocus;
                 SelfObj.SetVisualError = proto.Data.textline.SetVisualError;
 				SelfObj.state = textline.state;
+				SelfObj.Change = textline.Change;
 
 				//create rangeBox
 				var rangeBox = cwe('span','id,rangebox',parent);
@@ -2860,6 +2857,7 @@
 			this.CheckText = null;
             this.SetFocus = null;
             this.SetVisualError = null;
+			this.Change = null;
 
 			this.Destroy = proto.Destroy;
 			this.Show = proto.Show;
@@ -4882,7 +4880,8 @@
 				password: "password",
 				repeat_password: "repeat_password",
 				recipient: "recipient",
-				amount: "amount"
+				amount: "amount",
+				cost: "cost"
 			};
 			//options
 			var default_options = {
@@ -6952,7 +6951,10 @@
                                                                         minLength: limits.Task.Mask.Length.Min,
                                                                         maxLength:  limits.Task.Mask.Length.Max,
                                                                         regexp: regexp.task.mask,
-                                                                        checkData: true
+                                                                        checkData: true,
+																		onChange: function(){
+																			opts.setControl.addTask.functions.setCost();
+																		}
                                                                     },{visible: true});
                                                                 }
                                                             });
@@ -7007,7 +7009,10 @@
                                                                             max: limits.Task.BeforeClick.Value.Max,
                                                                             minLength: 1,
                                                                             step: 10,
-                                                                            checkData: true
+                                                                            checkData: true,
+																			onChange: function(){
+																				opts.setControl.addTask.functions.setCost();
+																			}
                                                                         },{visible: true});
                                                                     }
                                                                 },
@@ -7023,7 +7028,10 @@
                                                                             max: limits.Task.AfterClick.Value.Max,
                                                                             minLength: 1,
                                                                             step: 10,
-                                                                            checkData: true
+                                                                            checkData: true,
+																			onChange: function(){
+																				opts.setControl.addTask.functions.setCost();
+																			}
                                                                         },{visible: true});
                                                                     }
                                                                 }
@@ -7042,7 +7050,10 @@
                                                                             min: limits.Task.RangeSize.Value.Min,
                                                                             max: limits.Task.RangeSize.Value.Max,
                                                                             minLength: 1,
-                                                                            checkData: true
+                                                                            checkData: true,
+																			onChange: function(){
+																				opts.setControl.addTask.functions.setCost();
+																			}
                                                                         },{visible: true});
                                                                     }
                                                                 },
@@ -7057,7 +7068,10 @@
                                                                             min: limits.Task.UniqPeriod.Value.Min,
                                                                             max: limits.Task.UniqPeriod.Value.Max,
                                                                             minLength: 1,
-                                                                            checkData: true
+                                                                            checkData: true,
+																			onChange: function(){
+																				opts.setControl.addTask.functions.setCost();
+																			}
                                                                         },{visible: true});
                                                                     }
                                                                 }
@@ -7073,8 +7087,51 @@
 
                                     return tabContainer;
                                 }
-                            }
-                        ]
+                            },
+							{
+								name: inputs.cost,
+								text: language.type.taskAdd.cost.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										focus: false,
+										value: 0,
+										tooltip:  language.type.taskAdd.cost.tooltip,
+										checkData: false,
+										tags: {
+											readonly: "true"
+										}
+									},{visible: true});
+								}
+							}
+                        ],
+						functions: {
+							setCost: function(){
+								var costInput = SelfObj.areaset.GetControl(inputs.cost),
+									tabCont = SelfObj.areaset.GetControl(inputs.tabContainer),
+									tab_1 = tabCont.GetTab(inputs.tab_1),
+									tab_2 = tabCont.GetTab(inputs.tab_2),
+									areaset_1 = tab_1.GetControl(inputs.areaset),
+									areaset_2 = tab_2.GetControl(inputs.areaset),
+									maskInput = areaset_2.GetControl(inputs.mask[0]),
+									beforeClickInput = areaset_2.GetControl(inputs.beforeClick),
+									afterClickInput = areaset_2.GetControl(inputs.afterClick),
+									rangeSizeInput = areaset_2.GetControl(inputs.rangeSize),
+									uniqTimeInput = areaset_2.GetControl(inputs.uniqTime);
+
+								var cost = wa_manager.constants.service.TaskSecondCost *
+									((maskInput.GetValue().length>0) ? (parseInt(beforeClickInput.GetValue()) + parseInt(afterClickInput.GetValue())) : beforeClickInput.GetValue()) +
+									(wa_manager.constants.service.IPRangeFactor * rangeSizeInput.GetValue()) +
+									(wa_manager.constants.service.UniqueTimeFactor * uniqTimeInput.GetValue());
+
+								costInput.SetValue(parseFloat(cost.toFixed(4)));
+							}
+						},
+						events: [
+							function(msgbox){
+								opts.setControl.addTask.functions.setCost();
+							}
+						]
                     },
                     editTask: {
                         buttons: {
@@ -7326,7 +7383,10 @@
                                                                         maxLength:  limits.Task.Mask.Length.Max,
                                                                         regexp: regexp.task.mask,
                                                                         checkData: true,
-                                                                        value: opts.editTask.mask
+                                                                        value: opts.editTask.mask,
+																		onChange: function(){
+																			opts.setControl.editTask.functions.setCost();
+																		}
                                                                     },{visible: true});
                                                                 }
                                                             });
@@ -7383,7 +7443,10 @@
                                                                             max: limits.Task.BeforeClick.Value.Max,
                                                                             minLength: 1,
                                                                             step: 10,
-                                                                            checkData: true
+                                                                            checkData: true,
+																			onChange: function(){
+																				opts.setControl.editTask.functions.setCost();
+																			}
                                                                         },{visible: true});
                                                                     }
                                                                 },
@@ -7399,7 +7462,10 @@
                                                                             max: limits.Task.AfterClick.Value.Max,
                                                                             minLength: 1,
                                                                             step: 10,
-                                                                            checkData: true
+                                                                            checkData: true,
+																			onChange: function(){
+																				opts.setControl.editTask.functions.setCost();
+																			}
                                                                         },{visible: true});
                                                                     }
                                                                 }
@@ -7418,7 +7484,10 @@
                                                                             min: limits.Task.RangeSize.Value.Min,
                                                                             max: limits.Task.RangeSize.Value.Max,
                                                                             minLength: 1,
-                                                                            checkData: true
+                                                                            checkData: true,
+																			onChange: function(){
+																				opts.setControl.editTask.functions.setCost();
+																			}
                                                                         },{visible: true});
                                                                     }
                                                                 },
@@ -7433,7 +7502,10 @@
                                                                             min: limits.Task.UniqPeriod.Value.Min,
                                                                             max: limits.Task.UniqPeriod.Value.Max,
                                                                             minLength: 1,
-                                                                            checkData: true
+                                                                            checkData: true,
+																			onChange: function(){
+																				opts.setControl.editTask.functions.setCost();
+																			}
                                                                         },{visible: true});
                                                                     }
                                                                 }
@@ -7449,8 +7521,51 @@
 
                                     return tabContainer;
                                 }
-                            }
-                        ]
+                            },
+							{
+								name: inputs.cost,
+								text: language.type.taskAdd.cost.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										focus: false,
+										value: 0,
+										tooltip:  language.type.taskAdd.cost.tooltip,
+										checkData: false,
+										tags: {
+											readonly: "true"
+										}
+									},{visible: true});
+								}
+							}
+                        ],
+						functions: {
+							setCost: function(){
+								var costInput = SelfObj.areaset.GetControl(inputs.cost),
+									tabCont = SelfObj.areaset.GetControl(inputs.tabContainer),
+									tab_1 = tabCont.GetTab(inputs.tab_1),
+									tab_2 = tabCont.GetTab(inputs.tab_2),
+									areaset_1 = tab_1.GetControl(inputs.areaset),
+									areaset_2 = tab_2.GetControl(inputs.areaset),
+									maskInput = areaset_2.GetControl(inputs.mask[0]),
+									beforeClickInput = areaset_2.GetControl(inputs.beforeClick),
+									afterClickInput = areaset_2.GetControl(inputs.afterClick),
+									rangeSizeInput = areaset_2.GetControl(inputs.rangeSize),
+									uniqTimeInput = areaset_2.GetControl(inputs.uniqTime);
+
+								var cost = wa_manager.constants.service.TaskSecondCost *
+									((maskInput.GetValue().length>0) ? (parseInt(beforeClickInput.GetValue()) + parseInt(afterClickInput.GetValue())) : beforeClickInput.GetValue()) +
+									(wa_manager.constants.service.IPRangeFactor * rangeSizeInput.GetValue()) +
+									(wa_manager.constants.service.UniqueTimeFactor * uniqTimeInput.GetValue());
+
+								costInput.SetValue(parseFloat(cost.toFixed(4)));
+							}
+						},
+						events: [
+							function(msgbox){
+								opts.setControl.editTask.functions.setCost();
+							}
+						]
                     },
 					setTargetingCountry: {
 						buttons: {
@@ -7755,11 +7870,14 @@
 											wa_api.methods.ConfirmSendCredits({
 												token: wa_manager.methods.GetToken(),
 												code: proto.Data.areaset.GetControl(inputs.codeConfirm).GetValue(),
-												callback: function(){
+												callback: function(data){
 													SelfObj.Destroy({
 														callback: function(){
 															opts.confirmSendCredits = $.extend(true, opts.confirmSendCredits, {
-																codeConfirm: proto.Data.areaset.GetControl(inputs.codeConfirm).GetValue()
+																codeConfirm: proto.Data.areaset.GetControl(inputs.codeConfirm).GetValue(),
+																idOperation: data[jsonItem.IdOperation],
+																balance: data[jsonItem.Balance],
+																transferAomunt: data[jsonItem.TransferAmount]
 															});
 
 															opts.confirmSendCredits.success(opts.confirmSendCredits);
@@ -7990,9 +8108,35 @@
 										max: 999999999,
 										minLength: 1,
 										step: 1000,
-										checkData: true
+										checkData: true,
+										onChange: function(upDown){
+											var value = (upDown.state.error) ? 0 : upDown.GetValue(),
+												newValue = value * (1 + wa_manager.constants.service.TransferPercent/100);
+											SelfObj.areaset.GetControl(inputs.cost).SetValue(newValue);
+										}
 									},{visible: true});
 								}
+							},
+							{
+								name: inputs.cost,
+								text: language.type.sendCredits.cost.text,
+								control: function(holder){
+									return new control.textline({
+										holder: holder,
+										focus: false,
+										value: 0,
+										tooltip:  language.type.sendCredits.cost.tooltip,
+										checkData: false,
+										tags: {
+											readonly: "true"
+										}
+									},{visible: true});
+								}
+							}
+						],
+						events: [
+							function(msgbox){
+								msgbox.areaset.GetControl(inputs.amount).Change();
 							}
 						]
 					}
@@ -9285,18 +9429,18 @@
 																			var msgbox = new wa_manager.form.MessageBox({
 																				type: wa_manager.constants.form.messagebox.type.confirmSendCredits,
 																				confirmSendCredits: {
-																					success: function(){
+																					success: function(data){
 																						var _msg = new wa_manager.form.MessageBox({
 																							type: wa_manager.constants.form.messagebox.type.info,
 																							title: wa_manager.language.form.messagebox.title.notification,
-																							text: wa_manager.language.form.messagebox.type.confirmSendCredits.success
+																							text: wa_manager.language.form.messagebox.type.confirmSendCredits.success.replace("%CREDITS%",data.transferAomunt)
 																						},{visible: false});
 																						_msg.Show({effect: true});
 
 																						//check balance
 																						SelfObj.ChangeTextAndValue({
 																							balance: {
-																								value: dataFormat.Balance(parseInt(wa_manager.data.form.main.activeForm.items.balance.GetValue().replace(/ /g,"")) - parseInt(data.amount))
+																								value: dataFormat.Balance(data.balance)
 																							}
 																						});
 																					}
@@ -9568,10 +9712,6 @@
 				wa_api.methods.GetSystemConstants({
 					token: wa_manager.methods.GetToken(),
 					callback: function(data){
-						wa_manager.constants.service.AllowProxyFactor = data[jsonItem.AllowProxyFactor];
-						wa_manager.constants.service.ExchangeRate = data[jsonItem.ExchangeRate];
-						wa_manager.constants.service.IPRangeFactor = data[jsonItem.IPRangeFactor];
-
 						$.each(data, function(key, val){
 							var keyName = wa_manager.utils.inObject(wa_api.Constants.OperationItem, key);
 							if(keyName != null) wa_manager.constants.service[keyName] = val;
