@@ -9731,9 +9731,8 @@
 					token: wa_manager.data.user.token,
 					callback: function(data){
 						wa_manager.data.user.login = data[jsonItem.Login];
-						wa_manager.options.service.wmr = data[jsonItem.SystemWmr];
 
-						if(data[jsonItem.Deleted]) proto.Opts.items[8].controls[0].iconBoxItems.restore.show = true;
+						if(data[jsonItem.Deleted]) proto.Opts.items[6].controls[0].iconBoxItems.restore.show = true;
 
 						SelfObj.SetItems(opts.items);
 
